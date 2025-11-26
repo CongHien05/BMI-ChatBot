@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">BmiApp</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Tổng quan hôm nay</string>
+    <string name="dashboard_weight_label">Cân nặng hiện tại</string>
+    <string name="dashboard_weight_format">%1$.1f kg</string>
+    <string name="dashboard_bmi_label">Chỉ số BMI</string>
+    <string name="dashboard_bmi_format">%1$.1f</string>
+    <string name="dashboard_calories_label">Calories hôm nay</string>
+    <string name="dashboard_calories_format">%1$.0f kcal</string>
+    <string name="dashboard_error_generic">Có lỗi xảy ra, vui lòng thử lại.</string>
+    
+    <!-- Login strings -->
+    <string name="login_welcome">Chào mừng trở lại 👋</string>
+    <string name="login_subtitle">Đăng nhập để tiếp tục hành trình sức khỏe</string>
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Mật khẩu</string>
+    <string name="login_button">Đăng nhập</string>
+    <string name="login_register_link">Chưa có tài khoản? Đăng ký</string>
+    
+    <!-- Register strings -->
+    <string name="register_welcome">Tạo tài khoản mới ✨</string>
+    <string name="register_subtitle">Bắt đầu hành trình chăm sóc sức khỏe của bạn</string>
+    <string name="register_email_hint">Email</string>
+    <string name="register_password_hint">Mật khẩu</string>
+    <string name="register_button">Đăng ký</string>
+    <string name="register_login_link">Đã có tài khoản? Đăng nhập</string>
+    
+    <!-- Logout strings -->
+    <string name="logout_dialog_title">Đăng xuất</string>
+    <string name="logout_dialog_message">Bạn có chắc chắn muốn đăng xuất?</string>
+    <string name="logout_button_confirm">Đăng xuất</string>
+    <string name="logout_button_cancel">Hủy</string>
+    <string name="logout_success">Đã đăng xuất</string>
+</resources>
