@@ -11,6 +11,8 @@ import java.util.List;
 public interface UserExerciseLogRepository extends JpaRepository<UserExerciseLog, Integer> {
 
     List<UserExerciseLog> findByUserUserIdAndDateExercisedBetween(Integer userId, LocalDateTime start, LocalDateTime end);
+    
+    List<UserExerciseLog> findByUserUserIdAndDateExercisedAfter(Integer userId, LocalDateTime date);
 }
 
 

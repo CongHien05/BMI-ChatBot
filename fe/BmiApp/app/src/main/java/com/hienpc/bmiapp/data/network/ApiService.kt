@@ -6,6 +6,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Query
 
 /**
  * ApiService - các API được sử dụng ở Sprint 2:
@@ -54,4 +55,7 @@ interface ApiService {
     
     @GET("api/profile/streak")
     suspend fun getStreak(): Response<Streak>
+    
+    @GET("api/predictions/weight")
+    suspend fun predictWeight(@Query("days") days: Int = 7): Response<WeightPredictionResponse>
 }

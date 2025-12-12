@@ -23,4 +23,6 @@ class UserRepository(
     suspend fun getAchievements() = apiService.getAchievements()
     
     suspend fun getStreak() = apiService.getStreak()
+    
+    suspend fun predictWeight(days: Int = 7) = apiService.predictWeight(days)
 }

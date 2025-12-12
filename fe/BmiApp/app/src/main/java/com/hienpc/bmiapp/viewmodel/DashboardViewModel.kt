@@ -30,6 +30,9 @@ class DashboardViewModel(
     
     private val _trendAnalysisState = MutableLiveData<UiState<TrendAnalysisResponse>>(UiState.Idle)
     val trendAnalysisState: LiveData<UiState<TrendAnalysisResponse>> = _trendAnalysisState
+    
+    private val _weightPredictionState = MutableLiveData<UiState<WeightPredictionResponse>>(UiState.Idle)
+    val weightPredictionState: LiveData<UiState<WeightPredictionResponse>> = _weightPredictionState
 
     fun loadDashboard() {
         viewModelScope.launch {
@@ -180,6 +183,39 @@ class DashboardViewModel(
                     message = e.toErrorMessage(),
                     errorCode = "EXCEPTION",
                     throwable = e
+                )
+            }
+        }
+    }
+
+    fun loadWeightPrediction(days: Int = 7) {
+        viewModelScope.launch {
+            _weightPredictionState.value = UiState.Loading
+            try {
+                val response = retryIO(times = 2) {
+                    userRepository.predictWeight(days)
+                }
+                
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    if (data != null) {
+                        _weightPredictionState.value = UiState.Success(data)
+                    } else {
+                        _weightPredictionState.value = UiState.Error(
+                            message = "Không có dữ liệu dự đoán",
+                            errorCode = "NO_DATA"
+                        )
+                    }
+                } else {
+                    _weightPredictionState.value = UiState.Error(
+                        message = "Không thể tải dự đoán: ${response.message()}",
+                        errorCode = "API_ERROR_${response.code()}"
+                    )
+                }
+            } catch (e: Exception) {
+                _weightPredictionState.value = UiState.Error(
+                    message = e.toErrorMessage(),
+                    errorCode = "EXCEPTION"
                 )
             }
         }
