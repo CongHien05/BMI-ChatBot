@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Món ăn - Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script th:src="@{/js/admin-auth.js}"></script>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="~{admin/header :: header}"></div>
+        <h1>📝 Quản lý Món ăn</h1>
+        
+        <div class="nav-links">
+            <a href="/admin/foods">📝 Quản lý Món ăn</a>
+            <a href="/admin/exercises">💪 Quản lý Bài tập</a>
+            <a href="/admin/rules">🤖 Quản lý Rules</a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <div class="form-section">
+            <h2>Thêm Món ăn mới</h2>
+            <form th:action="@{/admin/foods/add}" method="post">
+                <div class="form-group">
+                    <label for="foodName">Tên món ăn:</label>
+                    <input type="text" id="foodName" name="foodName" required 
+                           placeholder="VD: Cơm trắng">
+                </div>
+                <div class="form-group">
+                    <label for="servingUnit">Đơn vị:</label>
+                    <input type="text" id="servingUnit" name="servingUnit" required 
+                           placeholder="VD: bát, chén, 100g">
+                </div>
+                <div class="form-group">
+                    <label for="caloriesPerUnit">Calories/Đơn vị:</label>
+                    <input type="number" id="caloriesPerUnit" name="caloriesPerUnit" required 
+                           min="1" placeholder="VD: 130">
+                </div>
+                <button type="submit">➕ Thêm Món ăn</button>
+            </form>
+        </div>
+
+        <h2>Danh sách Món ăn</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên món ăn</th>
+                    <th>Đơn vị</th>
+                    <th>Calories/Đơn vị</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="food : ${foods}">
+                    <td th:text="${food.foodId}"></td>
+                    <td th:text="${food.foodName}"></td>
+                    <td th:text="${food.servingUnit}"></td>
+                    <td th:text="${food.caloriesPerUnit}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(foods)}">
+                    <td colspan="4" class="empty-state">Chưa có món ăn nào</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Achievement Icon -->
+        <ImageView
+            android:id="@+id/imageAchievementIcon"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:contentDescription="@string/achievement_icon"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@android:drawable/star_big_on" />
+
+        <!-- Locked overlay -->
+        <View
+            android:id="@+id/viewLockedOverlay"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:alpha="0.7"
+            android:background="@android:color/darker_gray"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/imageAchievementIcon"
+            app:layout_constraintTop_toTopOf="@id/imageAchievementIcon"
+            tools:visibility="visible" />
+
+        <!-- Lock icon -->
+        <ImageView
+            android:id="@+id/imageLockIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="@string/locked"
+            android:src="@android:drawable/ic_lock_lock"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/imageAchievementIcon"
+            app:layout_constraintEnd_toEndOf="@id/imageAchievementIcon"
+            app:layout_constraintStart_toStartOf="@id/imageAchievementIcon"
+            app:layout_constraintTop_toTopOf="@id/imageAchievementIcon"
+            tools:visibility="visible" />
+
+        <!-- Achievement Title -->
+        <TextView
+            android:id="@+id/textAchievementTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/imageAchievementIcon"
+            app:layout_constraintTop_toTopOf="@id/imageAchievementIcon"
+            tools:text="🎉 Bước Đầu Tiên" />
+
+        <!-- Achievement Description -->
+        <TextView
+            android:id="@+id/textAchievementDescription"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/textAchievementTitle"
+            app:layout_constraintTop_toBottomOf="@id/textAchievementTitle"
+            tools:text="Log bữa ăn đầu tiên" />
+
+        <!-- Achieved Date (only for unlocked) -->
+        <TextView
+            android:id="@+id/textAchievedDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/accent"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/textAchievementTitle"
+            app:layout_constraintTop_toBottomOf="@id/textAchievementDescription"
+            tools:text="Đạt được: 12/12/2025"
+            tools:visibility="visible" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
+

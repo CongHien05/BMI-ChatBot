@@ -1,0 +1,32 @@
+<!-- Admin Header Fragment -->
+<div th:fragment="header" class="admin-header">
+    <div class="admin-info">
+        <span id="adminEmail"></span>
+    </div>
+    <button onclick="logout()" class="btn-logout">🚪 Đăng xuất</button>
+</div>
+
+<script>
+    // Hiển thị email admin
+    window.addEventListener('DOMContentLoaded', function() {
+        const email = localStorage.getItem('adminEmail');
+        if (email) {
+            const emailElement = document.getElementById('adminEmail');
+            if (emailElement) {
+                emailElement.textContent = '👤 ' + email;
+            }
+        }
+    });
+    
+    // Hàm logout
+    function logout() {
+        // Xóa cookie
+        document.cookie = 'adminToken=; path=/; max-age=0';
+        // Xóa localStorage
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminEmail');
+        // Redirect về login
+        window.location.href = '/admin/login';
+    }
+</script>
+

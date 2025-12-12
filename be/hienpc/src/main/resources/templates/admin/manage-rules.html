@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Chatbot Rules - Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script th:src="@{/js/admin-auth.js}"></script>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="~{admin/header :: header}"></div>
+        <h1>🤖 Quản lý Chatbot Rules</h1>
+        
+        <div class="nav-links">
+            <a href="/admin/foods">📝 Quản lý Món ăn</a>
+            <a href="/admin/exercises">💪 Quản lý Bài tập</a>
+            <a href="/admin/rules">🤖 Quản lý Rules</a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <div class="form-section">
+            <h2>Thêm Rule mới</h2>
+            <form th:action="@{/admin/rules/add}" method="post">
+                <div class="form-group">
+                    <label for="intent">Intent:</label>
+                    <input type="text" id="intent" name="intent" required 
+                           placeholder="VD: FAQ, ADD_WEIGHT, NUTRITION_TIPS">
+                </div>
+                <div class="form-group">
+                    <label for="keywords">Keywords (phân cách bằng dấu phẩy):</label>
+                    <textarea id="keywords" name="keywords" required 
+                              placeholder="VD: tăng cân, gain weight, muốn tăng cân"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="responseTemplate">Response Template:</label>
+                    <textarea id="responseTemplate" name="responseTemplate" required 
+                              placeholder="VD: Bạn muốn tăng cân hả? Hãy ăn nhiều calo hơn..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priority (số cao hơn = ưu tiên hơn):</label>
+                    <input type="number" id="priority" name="priority" value="0" min="0">
+                </div>
+                <button type="submit">➕ Thêm Rule</button>
+            </form>
+        </div>
+
+        <h2>Danh sách Rules</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Intent</th>
+                    <th>Keywords</th>
+                    <th>Response Template</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="rule : ${rules}">
+                    <td th:text="${rule.ruleId}"></td>
+                    <td th:text="${rule.intent}"></td>
+                    <td th:text="${rule.keywords}"></td>
+                    <td th:text="${rule.responseTemplate}"></td>
+                    <td th:text="${rule.priority}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(rules)}">
+                    <td colspan="5" class="empty-state">Chưa có rule nào</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+

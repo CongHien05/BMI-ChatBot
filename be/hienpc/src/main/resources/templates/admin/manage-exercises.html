@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Bài tập - Admin Portal</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script th:src="@{/js/admin-auth.js}"></script>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="~{admin/header :: header}"></div>
+        <h1>💪 Quản lý Bài tập</h1>
+        
+        <div class="nav-links">
+            <a href="/admin/foods">📝 Quản lý Món ăn</a>
+            <a href="/admin/exercises">💪 Quản lý Bài tập</a>
+            <a href="/admin/rules">🤖 Quản lý Rules</a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <div class="form-section">
+            <h2>Thêm Bài tập mới</h2>
+            <form th:action="@{/admin/exercises/add}" method="post">
+                <div class="form-group">
+                    <label for="exerciseName">Tên bài tập:</label>
+                    <input type="text" id="exerciseName" name="exerciseName" required 
+                           placeholder="VD: Chạy bộ, Bơi lội, Đạp xe">
+                </div>
+                <div class="form-group">
+                    <label for="caloriesBurnedPerHour">Calories đốt cháy/Giờ:</label>
+                    <input type="number" id="caloriesBurnedPerHour" name="caloriesBurnedPerHour" required 
+                           min="1" placeholder="VD: 500">
+                </div>
+                <button type="submit">➕ Thêm Bài tập</button>
+            </form>
+        </div>
+
+        <h2>Danh sách Bài tập</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên bài tập</th>
+                    <th>Calories/Giờ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="exercise : ${exercises}">
+                    <td th:text="${exercise.exerciseId}"></td>
+                    <td th:text="${exercise.exerciseName}"></td>
+                    <td th:text="${exercise.caloriesBurnedPerHour}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(exercises)}">
+                    <td colspan="3" class="empty-state">Chưa có bài tập nào</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+

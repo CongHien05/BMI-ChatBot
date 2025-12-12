@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Cho phép HTTP cleartext tới các host backend trong môi trường dev -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Emulator truy cập localhost của máy host -->
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <!-- Máy thật truy cập PC trong LAN (cập nhật theo IP thực tế) -->
+        <domain includeSubdomains="true">192.168.1.6</domain>
+        <domain includeSubdomains="true">192.168.1.7</domain>
+    </domain-config>
+</network-security-config>
+
+

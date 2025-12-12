@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Primary colors - Health green theme -->
+    <color name="primary">#4CAF50</color>
+    <color name="primary_dark">#388E3C</color>
+    <color name="primary_light">#81C784</color>
+    <color name="accent">#FF9800</color>
+    
+    <!-- Card backgrounds -->
+    <color name="card_weight_bg">#E8F5E9</color>
+    <color name="card_bmi_bg">#E3F2FD</color>
+    <color name="card_calories_bg">#FFF3E0</color>
+    <color name="chat_background">#FFF8F8F8</color>
+    <color name="chat_offline_bg">#FFE57373</color>
+
+    <!-- Chat bubbles / background (modern, dịu mắt hơn) -->
+    <color name="background_chat">#ECEFF1</color>
+    <color name="chat_user_bubble">#2E7D32</color>
+    <color name="chat_bot_bubble">#FFFFFF</color>
+    
+    <!-- Text colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#BDBDBD</color>
+    
+    <!-- Status colors -->
+    <color name="bmi_normal">#4CAF50</color>
+    <color name="bmi_overweight">#FF9800</color>
+    <color name="bmi_obese">#F44336</color>
+</resources>
