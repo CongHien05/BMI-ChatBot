@@ -57,6 +57,7 @@ class DashboardFragment : Fragment() {
         viewModel.loadDashboard()
         viewModel.loadWeeklySummary()
         viewModel.loadTrendAnalysis()
+        viewModel.loadWeightPrediction(7) // Load 7-day prediction
     }
 
     private fun observeViewModel() {
@@ -209,6 +210,57 @@ class DashboardFragment : Fragment() {
                 }
                 is UiState.Empty -> {
                     binding.cardTrendInsight.hide()
+                }
+                else -> {}
+            }
+        }
+        
+        // Observe weight prediction (AI)
+        viewModel.weightPredictionState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    val data = state.data
+                    
+                    // Setup prediction chart
+                    ChartHelper.setupWeightPredictionChart(
+                        binding.chartWeightPrediction,
+                        data.historicalData,
+                        data.predictions
+                    )
+                    
+                    // Display AI insights
+                    binding.textPredictionInsights.text = data.insights
+                    
+                    // Show trend indicator
+                    val trendText = when (data.metrics.trend) {
+                        "INCREASING" -> "📈 Tăng"
+                        "DECREASING" -> "📉 Giảm"
+                        else -> "➡️ Ổn định"
+                    }
+                    binding.textPredictionTrend.text = trendText
+                    binding.textPredictionTrend.setTextColor(
+                        when (data.metrics.trend) {
+                            "INCREASING" -> android.graphics.Color.parseColor("#E91E63")
+                            "DECREASING" -> android.graphics.Color.parseColor("#4CAF50")
+                            else -> android.graphics.Color.parseColor("#9E9E9E")
+                        }
+                    )
+                    
+                    // Show card
+                    binding.cardWeightPrediction.show()
+                }
+                is UiState.Error -> {
+                    // Hide prediction card on error
+                    binding.cardWeightPrediction.hide()
+                    Toast.makeText(requireContext(), "Không thể tải dự đoán: ${state.message}", Toast.LENGTH_SHORT).show()
+                }
+                is UiState.Empty -> {
+                    // Hide prediction card when empty
+                    binding.cardWeightPrediction.hide()
+                }
+                is UiState.Loading -> {
+                    // Show loading on card
+                    binding.textPredictionInsights.text = "⏳ Đang phân tích và dự đoán..."
                 }
                 else -> {}
             }

@@ -58,4 +58,10 @@ interface ApiService {
     
     @GET("api/predictions/weight")
     suspend fun predictWeight(@Query("days") days: Int = 7): Response<WeightPredictionResponse>
+    
+    @GET("api/recommendations/foods")
+    suspend fun getFoodRecommendations(@Query("limit") limit: Int = 10): Response<RecommendationResponse>
+    
+    @GET("api/recommendations/exercises")
+    suspend fun getExerciseRecommendations(@Query("limit") limit: Int = 10): Response<RecommendationResponse>
 }

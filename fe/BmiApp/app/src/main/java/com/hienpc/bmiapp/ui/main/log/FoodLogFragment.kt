@@ -9,9 +9,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.hienpc.bmiapp.data.model.FoodResponse
 import com.hienpc.bmiapp.databinding.FragmentFoodLogBinding
 import com.hienpc.bmiapp.utils.UiState
+import com.hienpc.bmiapp.utils.show
+import com.hienpc.bmiapp.utils.hide
 import com.hienpc.bmiapp.viewmodel.LogViewModel
 
 class FoodLogFragment : Fragment() {
@@ -22,6 +25,7 @@ class FoodLogFragment : Fragment() {
     private val viewModel: LogViewModel by viewModels()
 
     private var foods: List<FoodResponse> = emptyList()
+    private lateinit var recommendationAdapter: RecommendationAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,10 +40,32 @@ class FoodLogFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupMealTypeSpinner()
+        setupRecommendationsRecyclerView()
         setupListeners()
         observeViewModel()
 
         viewModel.loadFoods()
+        viewModel.loadFoodRecommendations(10)
+    }
+    
+    private fun setupRecommendationsRecyclerView() {
+        recommendationAdapter = RecommendationAdapter(emptyList()) { recommendedItem ->
+            // When user clicks a recommendation, auto-fill the form
+            val foodIndex = foods.indexOfFirst { it.name == recommendedItem.name }
+            if (foodIndex != -1) {
+                binding.spinnerFood.setSelection(foodIndex)
+                Toast.makeText(
+                    requireContext(),
+                    "Đã chọn: ${recommendedItem.name}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        
+        binding.recyclerRecommendations.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = recommendationAdapter
+        }
     }
 
     private fun setupMealTypeSpinner() {
@@ -116,6 +142,26 @@ class FoodLogFragment : Fragment() {
                 else -> Unit
             }
         })
+        
+        // Observe food recommendations
+        viewModel.foodRecommendationsState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    val data = state.data
+                    binding.textRecommendationExplanation.text = data.explanation
+                    recommendationAdapter.updateItems(data.items)
+                    binding.cardRecommendations.show()
+                }
+                is UiState.Error -> {
+                    binding.cardRecommendations.hide()
+                }
+                is UiState.Loading -> {
+                    binding.textRecommendationExplanation.text = "⏳ Đang tải gợi ý AI..."
+                    binding.cardRecommendations.show()
+                }
+                else -> {}
+            }
+        }
     }
 
     override fun onDestroyView() {

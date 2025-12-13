@@ -19,4 +19,8 @@ class FoodRepository(
     suspend fun logFood(request: FoodLogRequest) = apiService.logFood(request)
 
     suspend fun logExercise(request: ExerciseLogRequest) = apiService.logExercise(request)
+    
+    suspend fun getFoodRecommendations(limit: Int = 10) = apiService.getFoodRecommendations(limit)
+    
+    suspend fun getExerciseRecommendations(limit: Int = 10) = apiService.getExerciseRecommendations(limit)
 }
