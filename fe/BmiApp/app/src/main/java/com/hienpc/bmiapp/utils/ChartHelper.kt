@@ -8,6 +8,7 @@ import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.hienpc.bmiapp.data.model.DailySummaryItem
 import com.hienpc.bmiapp.data.model.WeightDataPoint
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet 
 import android.graphics.DashPathEffect
 import java.text.SimpleDateFormat
 import java.util.*
