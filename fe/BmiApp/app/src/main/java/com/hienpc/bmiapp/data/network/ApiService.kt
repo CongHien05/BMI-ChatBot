@@ -41,6 +41,9 @@ interface ApiService {
     @GET("api/dashboard/trends")
     suspend fun getTrendAnalysis(): Response<TrendAnalysisResponse>
 
+    @GET("api/profile")
+    suspend fun getProfile(): Response<ProfileResponse>
+    
     @PUT("api/profile")
     suspend fun updateProfile(@Body request: ProfileUpdateRequest): Response<Unit>
 

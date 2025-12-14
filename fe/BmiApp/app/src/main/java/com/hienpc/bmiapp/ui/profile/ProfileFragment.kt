@@ -49,11 +49,18 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        android.util.Log.d("ProfileFragment", "onViewCreated called")
+        
         setupAchievementsRecyclerView()
         setupGenderSpinner()
         setupListeners()
         observeViewModel()
         loadStreakAndAchievements()
+        
+        // Initialize stats with 0
+        binding.textTotalFoodLogs.text = "0"
+        binding.textTotalExerciseLogs.text = "0"
+        binding.textDaysActive.text = "0"
     }
     
     private fun setupAchievementsRecyclerView() {
@@ -66,41 +73,93 @@ class ProfileFragment : Fragment() {
     private fun loadStreakAndAchievements() {
         viewModel.loadStreak()
         viewModel.loadAchievements()
-        loadProgressToGoal()
+        viewModel.loadDashboard()
+        viewModel.loadMonthlySummary()
+        viewModel.loadProfile() // Load profile để lấy target weight
     }
     
-    private fun loadProgressToGoal() {
-        // TODO: Load from dashboard API or profile
-        // For now, using placeholder values
-        val currentWeight = 68.5 // From latest measurement
-        val targetWeight = 65.0 // From profile
-        val startWeight = 70.0 // From first measurement
+    private fun loadProgressToGoal(currentWeight: Double?, targetWeight: Double?, startWeight: Double?) {
+        if (currentWeight == null || targetWeight == null) {
+            // Show placeholder if data not available
+            binding.textCurrentWeight.text = "Hiện tại: -- kg"
+            binding.textTargetWeightDisplay.text = "Mục tiêu: -- kg"
+            binding.progressBarWeight.progress = 0
+            binding.textProgressPercentage.text = "Chưa có dữ liệu"
+            return
+        }
         
-        updateProgressBar(currentWeight, targetWeight, startWeight)
+        val start = startWeight ?: currentWeight // Use current weight as start if no history
+        updateProgressBar(currentWeight, targetWeight, start)
     }
     
     private fun updateProgressBar(current: Double, target: Double, start: Double) {
-        binding.textCurrentWeight.text = "Hiện tại: %.1f kg".format(current)
-        binding.textTargetWeightDisplay.text = "Mục tiêu: %.1f kg".format(target)
+        android.util.Log.d("ProfileFragment", "updateProgressBar called: current=$current, target=$target, start=$start")
+        try {
+            binding.textCurrentWeight.text = "Hiện tại: %.1f kg".format(current)
+            binding.textTargetWeightDisplay.text = "Mục tiêu: %.1f kg".format(target)
+            android.util.Log.d("ProfileFragment", "Text views updated")
         
-        if (start == target) {
+        // Check if goal is achieved
+        val difference = current - target
+        if (kotlin.math.abs(difference) < 0.1) { // Within 0.1kg tolerance
             binding.progressBarWeight.progress = 100
             binding.textProgressPercentage.text = "Đã đạt mục tiêu! 🎉"
             return
         }
         
-        val totalToLose = start - target
-        val lostSoFar = start - current
-        val progressPercentage = ((lostSoFar / totalToLose) * 100).coerceIn(0.0, 100.0).toInt()
+        // Determine if goal is to lose or gain weight
+        val isLosingWeight = target < start // Target is less than start weight
+        val isGainingWeight = target > start // Target is more than start weight
+        
+        val progressPercentage = if (isLosingWeight) {
+            // Goal: Lose weight (target < start)
+            // Example: start=70, target=65, current=68
+            // Progress = (70-68) / (70-65) * 100 = 2/5 * 100 = 40%
+            val totalToLose = start - target
+            val lostSoFar = start - current
+            if (totalToLose <= 0) 0 else ((lostSoFar / totalToLose) * 100).coerceIn(0.0, 100.0).toInt()
+        } else if (isGainingWeight) {
+            // Goal: Gain weight (target > start)
+            // Example: start=58, target=65, current=60
+            // Progress = (60-58) / (65-58) * 100 = 2/7 * 100 = 28.5%
+            val totalToGain = target - start
+            val gainedSoFar = current - start
+            if (totalToGain <= 0) 0 else ((gainedSoFar / totalToGain) * 100).coerceIn(0.0, 100.0).toInt()
+        } else {
+            // start == target (maintain weight)
+            100
+        }
         
         binding.progressBarWeight.progress = progressPercentage
-        binding.textProgressPercentage.text = "$progressPercentage% hoàn thành"
         
-        val remaining = current - target
-        if (remaining > 0) {
-            binding.textProgressPercentage.append(" • Còn %.1f kg".format(remaining))
+        // Calculate remaining
+        val remaining = if (isLosingWeight) {
+            current - target // How much more to lose
         } else {
+            target - current // How much more to gain
+        }
+        
+        if (kotlin.math.abs(remaining) < 0.1) {
             binding.textProgressPercentage.text = "Đã đạt mục tiêu! 🎉"
+        } else if (isLosingWeight) {
+            if (remaining > 0) {
+                binding.textProgressPercentage.text = "${progressPercentage}% hoàn thành • Còn giảm ${"%.1f".format(remaining)} kg"
+            } else {
+                binding.textProgressPercentage.text = "Đã đạt mục tiêu! 🎉"
+            }
+        } else {
+            // Gaining weight
+            if (remaining > 0) {
+                binding.textProgressPercentage.text = "${progressPercentage}% hoàn thành • Còn tăng ${"%.1f".format(remaining)} kg"
+            } else {
+                binding.textProgressPercentage.text = "Đã đạt mục tiêu! 🎉"
+            }
+        }
+        android.util.Log.d("ProfileFragment", "updateProgressBar completed successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("ProfileFragment", "Exception in updateProgressBar", e)
+            e.printStackTrace()
+            throw e // Re-throw to see in caller
         }
     }
 
@@ -112,6 +171,17 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupListeners() {
+        // Update progress bar when target weight changes
+        binding.editTextTargetWeight.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) { // When user finishes editing
+                val targetWeight = binding.editTextTargetWeight.text.toString().toDoubleOrNull()
+                if (targetWeight != null) {
+                    targetWeightValue = targetWeight
+                    updateProgressIfReady()
+                }
+            }
+        }
+        
         binding.buttonSaveProfile.setOnClickListener {
             val targetWeight = binding.editTextTargetWeight.text.toString().toDoubleOrNull()
             val calorieGoal = binding.editTextDailyCalorieGoal.text.toString().toIntOrNull()
@@ -185,6 +255,179 @@ class ProfileFragment : Fragment() {
                 }
                 else -> Unit
             }
+        }
+        
+        // Observe dashboard for current weight
+        viewModel.dashboardState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    val currentWeight = state.data.currentWeight
+                    android.util.Log.d("ProfileFragment", "Dashboard loaded: currentWeight=$currentWeight")
+                    currentWeightValue = currentWeight
+                    // Force update progress when dashboard loads
+                    updateProgressIfReady()
+                }
+                is UiState.Error -> {
+                    android.util.Log.e("ProfileFragment", "Error loading dashboard: ${state.message}")
+                }
+                else -> Unit
+            }
+        }
+        
+        // Observe profile for target weight and other profile data
+        viewModel.profileState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    val profile = state.data
+                    android.util.Log.d("ProfileFragment", "Profile loaded: targetWeight=${profile.goalWeightKg}, calorieGoal=${profile.dailyCalorieGoal}")
+                    
+                    // Pre-fill EditText với target weight từ profile
+                    profile.goalWeightKg?.let {
+                        binding.editTextTargetWeight.setText(it.toString())
+                        targetWeightValue = it // Cache target weight
+                    }
+                    
+                    // Pre-fill daily calorie goal
+                    profile.dailyCalorieGoal?.let {
+                        binding.editTextDailyCalorieGoal.setText(it.toString())
+                    }
+                    
+                    // Pre-fill gender
+                    profile.gender?.let { gender ->
+                        val items = listOf("Nam", "Nữ", "Khác")
+                        val index = items.indexOf(gender)
+                        if (index >= 0) {
+                            binding.spinnerGender.setSelection(index)
+                        }
+                    }
+                    
+                    // Force update progress when profile loads
+                    updateProgressIfReady()
+                }
+                is UiState.Error -> {
+                    android.util.Log.e("ProfileFragment", "Error loading profile: ${state.message}")
+                }
+                else -> Unit
+            }
+        }
+        
+        // Observe monthly summary for start weight (first measurement) and stats
+        viewModel.monthlySummaryState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    val summary = state.data
+                    android.util.Log.d("ProfileFragment", "Monthly summary loaded: ${summary.totalFoodLogs} food, ${summary.totalExerciseLogs} exercise")
+                    
+                    // Update start weight from first measurement
+                    startWeightValue = summary.dailySummaries
+                        .firstOrNull { it.weight != null }?.weight
+                    
+                    android.util.Log.d("ProfileFragment", "Start weight set: $startWeightValue")
+                    
+                    // Update progress with start weight
+                    android.util.Log.d("ProfileFragment", "About to call updateProgressIfReady()")
+                    updateProgressIfReady()
+                    android.util.Log.d("ProfileFragment", "updateProgressIfReady() completed")
+                    
+                    // Update profile stats - MUST BE CALLED
+                    android.util.Log.d("ProfileFragment", "BEFORE Calling updateProfileStats - summary.totalFoodLogs=${summary.totalFoodLogs}")
+                    try {
+                        android.util.Log.d("ProfileFragment", "Inside try block, calling updateProfileStats")
+                        updateProfileStats(summary)
+                        android.util.Log.d("ProfileFragment", "AFTER updateProfileStats completed successfully")
+                    } catch (e: Exception) {
+                        android.util.Log.e("ProfileFragment", "EXCEPTION in updateProfileStats", e)
+                        e.printStackTrace()
+                    }
+                    android.util.Log.d("ProfileFragment", "After try-catch block")
+                }
+                is UiState.Error -> {
+                    android.util.Log.e("ProfileFragment", "Error loading monthly summary: ${state.message}")
+                }
+                else -> Unit
+            }
+        }
+    }
+    
+    private var currentWeightValue: Double? = null
+    private var startWeightValue: Double? = null
+    private var targetWeightValue: Double? = null
+    
+    /**
+     * Update progress bar if both current weight and target weight are available
+     */
+    private fun updateProgressIfReady() {
+        // Get current weight
+        val current = currentWeightValue 
+            ?: viewModel.dashboardState.value?.let {
+                if (it is UiState.Success) it.data.currentWeight else null
+            }
+        
+        // Get target weight from multiple sources
+        val target = targetWeightValue 
+            ?: binding.editTextTargetWeight.text.toString().toDoubleOrNull()
+            ?: viewModel.profileState.value?.let {
+                if (it is UiState.Success) it.data.goalWeightKg else null
+            }
+        
+        // Update cached values
+        if (current != null) currentWeightValue = current
+        if (target != null) targetWeightValue = target
+        
+        // Update progress bar if we have both current and target weight
+        if (current != null && target != null) {
+            android.util.Log.d("ProfileFragment", "Updating progress: current=$current, target=$target, start=$startWeightValue")
+            try {
+                loadProgressToGoal(current, target, startWeightValue)
+                android.util.Log.d("ProfileFragment", "loadProgressToGoal completed")
+            } catch (e: Exception) {
+                android.util.Log.e("ProfileFragment", "Exception in loadProgressToGoal", e)
+                e.printStackTrace()
+            }
+        } else {
+            // Show placeholder if data not available
+            android.util.Log.d("ProfileFragment", "Progress not ready: current=$current, target=$target")
+            binding.textCurrentWeight.text = "Hiện tại: -- kg"
+            binding.textTargetWeightDisplay.text = "Mục tiêu: -- kg"
+            binding.progressBarWeight.progress = 0
+            if (target == null) {
+                binding.textProgressPercentage.text = "Chưa có dữ liệu. Vui lòng nhập mục tiêu cân nặng."
+            } else {
+                binding.textProgressPercentage.text = "Đang tải dữ liệu..."
+            }
+        }
+    }
+    
+    private fun updateProgressWithData(currentWeight: Double?, targetWeight: Double?, startWeight: Double? = null) {
+        // Update cached values
+        currentWeightValue = currentWeight ?: currentWeightValue
+        startWeightValue = startWeight ?: startWeightValue
+        targetWeightValue = targetWeight ?: targetWeightValue
+        
+        // Update progress bar
+        updateProgressIfReady()
+    }
+    
+    private fun updateProfileStats(summary: com.hienpc.bmiapp.data.model.MonthlySummaryResponse) {
+        try {
+            // Total food logs
+            val totalFoodLogs = summary.totalFoodLogs
+            binding.textTotalFoodLogs.text = totalFoodLogs.toString()
+            
+            // Total exercise logs (workouts)
+            val totalExerciseLogs = summary.totalExerciseLogs
+            binding.textTotalExerciseLogs.text = totalExerciseLogs.toString()
+            
+            // Days active: số ngày có ít nhất 1 log (food hoặc exercise)
+            val daysActive = summary.dailySummaries.count { 
+                it.foodLogsCount > 0 || it.exerciseLogsCount > 0 
+            }
+            binding.textDaysActive.text = daysActive.toString()
+            
+            // Debug logging
+            android.util.Log.d("ProfileFragment", "Stats updated: Food=$totalFoodLogs, Exercise=$totalExerciseLogs, Days=$daysActive")
+        } catch (e: Exception) {
+            android.util.Log.e("ProfileFragment", "Error updating stats", e)
         }
     }
 
