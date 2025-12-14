@@ -15,6 +15,7 @@ import vn.vku.udn.hienpc.bmichatbot.dto.response.ChatHistoryItemResponse;
 import vn.vku.udn.hienpc.bmichatbot.dto.response.ChatResponse;
 import vn.vku.udn.hienpc.bmichatbot.service.ChatConversationService;
 import vn.vku.udn.hienpc.bmichatbot.service.ChatbotService;
+import vn.vku.udn.hienpc.bmichatbot.service.ChatLoggingService;
 import vn.vku.udn.hienpc.bmichatbot.service.JwtService;
 
 import java.time.LocalDateTime;
@@ -44,6 +45,9 @@ class ChatbotApiControllerTest {
     @MockBean
     private ChatConversationService chatConversationService;
 
+    @MockBean
+    private ChatLoggingService chatLoggingService;
+
     @Test
     @WithMockUser(username = "test@example.com")
     void chat_shouldReturnReply() throws Exception {
@@ -55,7 +59,7 @@ class ChatbotApiControllerTest {
                         .durationMs(5L)
                         .build());
 
-        ChatRequest req = new ChatRequest("Hello");
+        ChatRequest req = new ChatRequest("Hello", null);
 
         mockMvc.perform(post("/api/chatbot")
                         .with(csrf())
