@@ -18,6 +18,8 @@ class UserRepository(
     
     suspend fun getTrendAnalysis() = apiService.getTrendAnalysis()
 
+    suspend fun getProfile() = apiService.getProfile()
+    
     suspend fun updateProfile(request: ProfileUpdateRequest) = apiService.updateProfile(request)
     
     suspend fun getAchievements() = apiService.getAchievements()
