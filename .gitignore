@@ -2,3 +2,7 @@
 *.md
 
 # Except important docs
+*.ts
+*.ts >> .gitignore*/*.gradle.kts
+*.ts
+*.ts >> .gitignore*/*.gradle.kts
