@@ -18,10 +18,10 @@ import retrofit2.http.Query
 interface ApiService {
 
     @GET("api/foods")
-    suspend fun getFoods(): Response<List<FoodResponse>>
+    suspend fun getFoods(@Query("q") query: String? = null): Response<List<FoodResponse>>
 
     @GET("api/exercises")
-    suspend fun getExercises(): Response<List<ExerciseResponse>>
+    suspend fun getExercises(@Query("q") query: String? = null): Response<List<ExerciseResponse>>
 
     @POST("api/logs/food")
     suspend fun logFood(@Body request: FoodLogRequest): Response<Unit>

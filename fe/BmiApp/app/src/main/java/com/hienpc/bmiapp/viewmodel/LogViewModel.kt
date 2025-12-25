@@ -36,11 +36,11 @@ class LogViewModel(
     private val _exerciseRecommendationsState = MutableLiveData<UiState<RecommendationResponse>>(UiState.Idle)
     val exerciseRecommendationsState: LiveData<UiState<RecommendationResponse>> = _exerciseRecommendationsState
 
-    fun loadFoods() {
+    fun loadFoods(query: String? = null) {
         viewModelScope.launch {
             _foodsState.value = UiState.Loading
             try {
-                val response = repository.getFoods()
+                val response = repository.getFoods(query)
                 if (response.isSuccessful) {
                     val data = response.body().orEmpty()
                     _foodsState.value = UiState.Success(data)
@@ -55,11 +55,11 @@ class LogViewModel(
         }
     }
 
-    fun loadExercises() {
+    fun loadExercises(query: String? = null) {
         viewModelScope.launch {
             _exercisesState.value = UiState.Loading
             try {
-                val response = repository.getExercises()
+                val response = repository.getExercises(query)
                 if (response.isSuccessful) {
                     val data = response.body().orEmpty()
                     _exercisesState.value = UiState.Success(data)

@@ -44,6 +44,20 @@ public class FoodLogService {
                         f.getCaloriesPerUnit()))
                 .collect(Collectors.toList());
     }
+    
+    public List<FoodResponse> searchFoods(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return getAllFoods();
+        }
+        
+        return foodRepository.searchByName(query.trim()).stream()
+                .map(f -> new FoodResponse(
+                        f.getFoodId(),
+                        f.getFoodName(),
+                        f.getServingUnit(),
+                        f.getCaloriesPerUnit()))
+                .collect(Collectors.toList());
+    }
 
     public void logFood(String userEmail, FoodLogRequest request) {
         User user = userRepository.findByEmail(userEmail)

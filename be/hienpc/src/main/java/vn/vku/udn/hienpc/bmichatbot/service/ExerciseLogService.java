@@ -43,6 +43,19 @@ public class ExerciseLogService {
                         e.getCaloriesBurnedPerHour()))
                 .collect(Collectors.toList());
     }
+    
+    public List<ExerciseResponse> searchExercises(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return getAllExercises();
+        }
+        
+        return exerciseRepository.searchByName(query.trim()).stream()
+                .map(e -> new ExerciseResponse(
+                        e.getExerciseId(),
+                        e.getExerciseName(),
+                        e.getCaloriesBurnedPerHour()))
+                .collect(Collectors.toList());
+    }
 
     public void logExercise(String userEmail, ExerciseLogRequest request) {
         User user = userRepository.findByEmail(userEmail)

@@ -3,11 +3,17 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- Primary colors - Health green theme -->
-    <color name="primary">#4CAF50</color>
-    <color name="primary_dark">#388E3C</color>
-    <color name="primary_light">#81C784</color>
-    <color name="accent">#FF9800</color>
+    <!-- Primary colors - Modern gradient theme (warm, energetic) -->
+    <color name="primary">#6366F1</color> <!-- Indigo - modern, trustworthy -->
+    <color name="primary_dark">#4F46E5</color>
+    <color name="primary_light">#818CF8</color>
+    <color name="accent">#F59E0B</color> <!-- Amber - warm, energetic -->
+    
+    <!-- Gradient colors for buttons -->
+    <color name="gradient_start_food">#FF6B6B</color> <!-- Coral red -->
+    <color name="gradient_end_food">#FF8E53</color> <!-- Orange -->
+    <color name="gradient_start_exercise">#4ECDC4</color> <!-- Teal -->
+    <color name="gradient_end_exercise">#44A08D</color> <!-- Green teal -->
     
     <!-- Card backgrounds -->
     <color name="card_weight_bg">#E8F5E9</color>
