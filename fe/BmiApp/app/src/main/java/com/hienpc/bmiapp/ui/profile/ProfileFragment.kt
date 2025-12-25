@@ -1,6 +1,9 @@
 package com.hienpc.bmiapp.ui.profile
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -23,6 +27,9 @@ import com.hienpc.bmiapp.ui.auth.LoginActivity
 import com.hienpc.bmiapp.utils.UiState
 import com.hienpc.bmiapp.viewmodel.ProfileViewModel
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 class ProfileFragment : Fragment() {
 
@@ -76,6 +83,7 @@ class ProfileFragment : Fragment() {
         viewModel.loadDashboard()
         viewModel.loadMonthlySummary()
         viewModel.loadProfile() // Load profile để lấy target weight
+        viewModel.loadTrendAnalysis() // Load trend analysis để lấy days until goal
     }
     
     private fun loadProgressToGoal(currentWeight: Double?, targetWeight: Double?, startWeight: Double?) {
@@ -198,6 +206,10 @@ class ProfileFragment : Fragment() {
 
         binding.buttonLogout.setOnClickListener {
             showLogoutDialog()
+        }
+        
+        binding.buttonShareProgress.setOnClickListener {
+            shareProgress()
         }
     }
 
@@ -347,6 +359,45 @@ class ProfileFragment : Fragment() {
                 else -> Unit
             }
         }
+        
+        // Observe trend analysis for days until goal
+        viewModel.trendAnalysisState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    val daysToGoal = state.data.daysToGoal
+                    updateDaysUntilGoal(daysToGoal)
+                }
+                is UiState.Error -> {
+                    android.util.Log.e("ProfileFragment", "Error loading trend analysis: ${state.message}")
+                    binding.textDaysUntilGoal.text = ""
+                }
+                else -> Unit
+            }
+        }
+    }
+    
+    private fun updateDaysUntilGoal(daysToGoal: Int?) {
+        if (daysToGoal == null || daysToGoal <= 0) {
+            binding.textDaysUntilGoal.text = ""
+            return
+        }
+        
+        when {
+            daysToGoal == 1 -> {
+                binding.textDaysUntilGoal.text = "Dự kiến đạt mục tiêu trong 1 ngày nữa! 🎯"
+            }
+            daysToGoal < 7 -> {
+                binding.textDaysUntilGoal.text = "Dự kiến đạt mục tiêu trong $daysToGoal ngày nữa! 🎯"
+            }
+            daysToGoal < 30 -> {
+                val weeks = (daysToGoal / 7.0).toInt()
+                binding.textDaysUntilGoal.text = "Dự kiến đạt mục tiêu trong khoảng $weeks tuần nữa 📅"
+            }
+            else -> {
+                val months = (daysToGoal / 30.0).toInt()
+                binding.textDaysUntilGoal.text = "Dự kiến đạt mục tiêu trong khoảng $months tháng nữa 📅"
+            }
+        }
     }
     
     private var currentWeightValue: Double? = null
@@ -461,6 +512,109 @@ class ProfileFragment : Fragment() {
             // Finish MainActivity
             requireActivity().finish()
         }
+    }
+    
+    private fun shareProgress() {
+        try {
+            // Capture Progress to Goal card
+            val cardView = binding.cardProgressToGoal
+            val bitmap = captureView(cardView)
+            
+            if (bitmap != null) {
+                // Save bitmap to file
+                val imageFile = saveBitmapToFile(bitmap)
+                
+                if (imageFile != null) {
+                    // Create share intent
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "image/png"
+                        putExtra(Intent.EXTRA_STREAM, getUriForFile(imageFile))
+                        putExtra(Intent.EXTRA_TEXT, buildShareText())
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    
+                    // Start share activity
+                    startActivity(Intent.createChooser(shareIntent, "Chia sẻ tiến độ"))
+                } else {
+                    Toast.makeText(requireContext(), "Không thể lưu ảnh", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(requireContext(), "Không thể chụp ảnh", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ProfileFragment", "Error sharing progress", e)
+            Toast.makeText(requireContext(), "Lỗi khi chia sẻ: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun captureView(view: View): Bitmap? {
+        return try {
+            view.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            view.layout(0, 0, view.measuredWidth, view.measuredHeight)
+            
+            val bitmap = Bitmap.createBitmap(
+                view.measuredWidth,
+                view.measuredHeight,
+                Bitmap.Config.ARGB_8888
+            )
+            val canvas = Canvas(bitmap)
+            view.draw(canvas)
+            bitmap
+        } catch (e: Exception) {
+            android.util.Log.e("ProfileFragment", "Error capturing view", e)
+            null
+        }
+    }
+    
+    private fun saveBitmapToFile(bitmap: Bitmap): File? {
+        return try {
+            val cacheDir = requireContext().cacheDir
+            val imageFile = File(cacheDir, "progress_share_${System.currentTimeMillis()}.png")
+            
+            FileOutputStream(imageFile).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+            imageFile
+        } catch (e: IOException) {
+            android.util.Log.e("ProfileFragment", "Error saving bitmap", e)
+            null
+        }
+    }
+    
+    private fun getUriForFile(file: File): Uri {
+        return FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            file
+        )
+    }
+    
+    private fun buildShareText(): String {
+        val currentWeight = currentWeightValue
+        val targetWeight = targetWeightValue
+        val progressText = binding.textProgressPercentage.text.toString()
+        val daysText = binding.textDaysUntilGoal.text.toString()
+        
+        val shareText = StringBuilder()
+        shareText.append("🎯 Tiến độ mục tiêu của tôi:\n\n")
+        
+        if (currentWeight != null && targetWeight != null) {
+            shareText.append("Hiện tại: ${"%.1f".format(currentWeight)} kg\n")
+            shareText.append("Mục tiêu: ${"%.1f".format(targetWeight)} kg\n")
+        }
+        
+        shareText.append("$progressText\n")
+        
+        if (daysText.isNotEmpty()) {
+            shareText.append("$daysText\n")
+        }
+        
+        shareText.append("\n#BMIApp #FitnessJourney #HealthGoals")
+        
+        return shareText.toString()
     }
 
     override fun onDestroyView() {
