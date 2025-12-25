@@ -252,6 +252,7 @@
         
         <!-- Progress to Goal Card -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardProgressToGoal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -316,6 +317,28 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     tools:text="60% hoàn thành" />
+                
+                <TextView
+                    android:id="@+id/textDaysUntilGoal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="italic"
+                    tools:text="Dự kiến đạt mục tiêu trong 45 ngày" />
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonShareProgress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_gravity="end"
+                    android:text="Chia sẻ tiến độ"
+                    android:textSize="12sp"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    app:icon="@android:drawable/ic_menu_share"
+                    app:iconGravity="textStart" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
         

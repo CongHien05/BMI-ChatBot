@@ -11,6 +11,7 @@ import com.hienpc.bmiapp.data.model.MonthlySummaryResponse
 import com.hienpc.bmiapp.data.model.ProfileResponse
 import com.hienpc.bmiapp.data.model.ProfileUpdateRequest
 import com.hienpc.bmiapp.data.model.Streak
+import com.hienpc.bmiapp.data.model.TrendAnalysisResponse
 import com.hienpc.bmiapp.data.repository.UserRepository
 import com.hienpc.bmiapp.utils.UiState
 import kotlinx.coroutines.launch
@@ -36,6 +37,9 @@ class ProfileViewModel(
     
     private val _profileState = MutableLiveData<UiState<ProfileResponse>>(UiState.Idle)
     val profileState: LiveData<UiState<ProfileResponse>> = _profileState
+    
+    private val _trendAnalysisState = MutableLiveData<UiState<TrendAnalysisResponse>>(UiState.Idle)
+    val trendAnalysisState: LiveData<UiState<TrendAnalysisResponse>> = _trendAnalysisState
 
     fun updateProfile(request: ProfileUpdateRequest) {
         viewModelScope.launch {
@@ -135,6 +139,22 @@ class ProfileViewModel(
                 }
             } catch (e: Exception) {
                 _profileState.value = UiState.Error("Lỗi: ${e.message}")
+            }
+        }
+    }
+    
+    fun loadTrendAnalysis() {
+        viewModelScope.launch {
+            _trendAnalysisState.value = UiState.Loading
+            try {
+                val response = userRepository.getTrendAnalysis()
+                if (response.isSuccessful && response.body() != null) {
+                    _trendAnalysisState.value = UiState.Success(response.body()!!)
+                } else {
+                    _trendAnalysisState.value = UiState.Error("Không thể tải trend analysis")
+                }
+            } catch (e: Exception) {
+                _trendAnalysisState.value = UiState.Error("Lỗi: ${e.message}")
             }
         }
     }
