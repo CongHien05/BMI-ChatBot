@@ -29,7 +29,12 @@ public class FoodLogApiController {
 
     @GetMapping("/foods")
     @Operation(summary = "Get all foods", description = "Return list of foods that user can select when logging meals")
-    public ResponseEntity<List<FoodResponse>> getFoods() {
+    public ResponseEntity<List<FoodResponse>> getFoods(
+            @Parameter(description = "Search query (optional)")
+            @RequestParam(required = false) String q) {
+        if (q != null && !q.trim().isEmpty()) {
+            return ResponseEntity.ok(foodLogService.searchFoods(q));
+        }
         return ResponseEntity.ok(foodLogService.getAllFoods());
     }
 

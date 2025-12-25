@@ -12,9 +12,9 @@ import com.hienpc.bmiapp.data.network.ApiService
 class FoodRepository(
     private val apiService: ApiService = ApiClient.createService(ApiService::class.java)
 ) {
-    suspend fun getFoods() = apiService.getFoods()
+    suspend fun getFoods(query: String? = null) = apiService.getFoods(query)
 
-    suspend fun getExercises() = apiService.getExercises()
+    suspend fun getExercises(query: String? = null) = apiService.getExercises(query)
 
     suspend fun logFood(request: FoodLogRequest) = apiService.logFood(request)
 

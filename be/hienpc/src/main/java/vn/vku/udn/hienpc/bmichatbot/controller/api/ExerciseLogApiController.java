@@ -29,7 +29,12 @@ public class ExerciseLogApiController {
 
     @GetMapping("/exercises")
     @Operation(summary = "Get all exercises", description = "Return list of exercises for logging workouts")
-    public ResponseEntity<List<ExerciseResponse>> getExercises() {
+    public ResponseEntity<List<ExerciseResponse>> getExercises(
+            @Parameter(description = "Search query (optional)")
+            @RequestParam(required = false) String q) {
+        if (q != null && !q.trim().isEmpty()) {
+            return ResponseEntity.ok(exerciseLogService.searchExercises(q));
+        }
         return ResponseEntity.ok(exerciseLogService.getAllExercises());
     }
 

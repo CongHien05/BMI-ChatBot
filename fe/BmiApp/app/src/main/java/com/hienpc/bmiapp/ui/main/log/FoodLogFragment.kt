@@ -1,14 +1,19 @@
 package com.hienpc.bmiapp.ui.main.log
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
+import android.widget.Filterable
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.hienpc.bmiapp.data.model.FoodResponse
 import com.hienpc.bmiapp.databinding.FragmentFoodLogBinding
@@ -16,6 +21,9 @@ import com.hienpc.bmiapp.utils.UiState
 import com.hienpc.bmiapp.utils.show
 import com.hienpc.bmiapp.utils.hide
 import com.hienpc.bmiapp.viewmodel.LogViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class FoodLogFragment : Fragment() {
 
@@ -25,7 +33,10 @@ class FoodLogFragment : Fragment() {
     private val viewModel: LogViewModel by viewModels()
 
     private var foods: List<FoodResponse> = emptyList()
+    private var allFoods: List<FoodResponse> = emptyList() // Store all foods for filtering
     private lateinit var recommendationAdapter: RecommendationAdapter
+    private var searchJob: Job? = null
+    private var selectedFood: FoodResponse? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,26 +50,28 @@ class FoodLogFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupMealTypeSpinner()
         setupRecommendationsRecyclerView()
+        setupFoodAutoComplete()
+        setupMealTypeChips()
         setupListeners()
         observeViewModel()
 
-        viewModel.loadFoods()
+        viewModel.loadFoods() // Load all foods initially
         viewModel.loadFoodRecommendations(10)
     }
     
     private fun setupRecommendationsRecyclerView() {
         recommendationAdapter = RecommendationAdapter(emptyList()) { recommendedItem ->
-            // When user clicks a recommendation, auto-fill the form
-            val foodIndex = foods.indexOfFirst { it.name == recommendedItem.name }
-            if (foodIndex != -1) {
-                binding.spinnerFood.setSelection(foodIndex)
-                Toast.makeText(
-                    requireContext(),
-                    "Đã chọn: ${recommendedItem.name}",
-                    Toast.LENGTH_SHORT
-                ).show()
+            // When user clicks a recommendation, auto-fill the form AND focus on quantity
+            val food = allFoods.find { it.name == recommendedItem.name }
+            if (food != null) {
+                binding.autoCompleteFood.setText(food.name, false)
+                selectedFood = food
+                // Focus on quantity input for better flow
+                binding.editTextQuantity.requestFocus()
+                // Show keyboard
+                val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(binding.editTextQuantity, InputMethodManager.SHOW_IMPLICIT)
             }
         }
         
@@ -67,22 +80,79 @@ class FoodLogFragment : Fragment() {
             adapter = recommendationAdapter
         }
     }
+    
+    private fun setupFoodAutoComplete() {
+        // Create adapter with custom dropdown layout
+        val adapter = object : ArrayAdapter<FoodResponse>(
+            requireContext(),
+            R.layout.item_dropdown_food
+        ) {
+            override fun getCount(): Int = foods.size
+            override fun getItem(position: Int): FoodResponse = foods[position]
+            override fun getItemId(position: Int): Long = foods[position].id.toLong()
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = convertView ?: LayoutInflater.from(context)
+                    .inflate(R.layout.item_dropdown_food, parent, false)
+                
+                val textItemName = view.findViewById<android.widget.TextView>(R.id.textItemName)
+                textItemName.text = foods[position].name
+                
+                return view
+            }
+        }
+        
+        binding.autoCompleteFood.setAdapter(adapter)
+        // Disable threshold to show dropdown immediately when there are results
+        binding.autoCompleteFood.threshold = 1
+        
+        // Handle text change with debounce for search
+        binding.autoCompleteFood.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s?.toString()?.trim()
+                
+                // Cancel previous search
+                searchJob?.cancel()
+                
+                // Debounce search (wait 500ms after user stops typing)
+                searchJob = lifecycleScope.launch {
+                    delay(500)
+                    if (query.isNullOrEmpty() || query.length < 2) {
+                        // If query is too short, show all foods
+                        viewModel.loadFoods(null)
+                    } else {
+                        // Search with query
+                        viewModel.loadFoods(query)
+                    }
+                }
+            }
+        })
+        
+        // Handle item selection
+        binding.autoCompleteFood.setOnItemClickListener { _, _, position, _ ->
+            selectedFood = foods[position]
+        }
+    }
 
-    private fun setupMealTypeSpinner() {
-        val items = listOf("Breakfast", "Lunch", "Dinner", "Snack")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, items)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerMealType.adapter = adapter
+    private fun setupMealTypeChips() {
+        // ChipGroup is already configured in XML with singleSelection="true"
+        // Default selection is chipBreakfast (set in XML)
+        // No additional setup needed
     }
 
     private fun setupListeners() {
         binding.buttonLogFood.setOnClickListener {
-            val selectedPosition = binding.spinnerFood.selectedItemPosition
-            if (selectedPosition == -1 || foods.isEmpty()) {
+            val food = selectedFood ?: run {
+                // Try to find food by name if not selected
+                val foodName = binding.autoCompleteFood.text.toString().trim()
+                allFoods.find { it.name.equals(foodName, ignoreCase = true) }
+            }
+            
+            if (food == null) {
                 Toast.makeText(requireContext(), "Vui lòng chọn món ăn", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val selectedFood = foods[selectedPosition]
 
             val quantityText = binding.editTextQuantity.text.toString()
             val quantity = quantityText.toDoubleOrNull()
@@ -91,9 +161,22 @@ class FoodLogFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val mealType = binding.spinnerMealType.selectedItem as String
+            // Get selected meal type from ChipGroup
+            val selectedChipId = binding.chipGroupMealType.checkedChipId
+            if (selectedChipId == View.NO_ID) {
+                Toast.makeText(requireContext(), "Vui lòng chọn bữa ăn", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            val mealType = when (selectedChipId) {
+                binding.chipBreakfast.id -> "Breakfast"
+                binding.chipLunch.id -> "Lunch"
+                binding.chipDinner.id -> "Dinner"
+                binding.chipSnack.id -> "Snack"
+                else -> "Breakfast"
+            }
 
-            viewModel.logFood(selectedFood.id, quantity, mealType)
+            viewModel.logFood(food.id, quantity, mealType)
         }
     }
 
@@ -109,11 +192,35 @@ class FoodLogFragment : Fragment() {
                     binding.buttonLogFood.isEnabled = true
 
                     foods = state.data
-                    val names = foods.map { it.name }
-                    val adapter =
-                        ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, names)
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    binding.spinnerFood.adapter = adapter
+                    // Store all foods for recommendations and fallback
+                    if (allFoods.isEmpty()) {
+                        allFoods = foods
+                    }
+                    
+                    // Create new adapter with custom dropdown layout
+                    val adapter = object : ArrayAdapter<FoodResponse>(
+                        requireContext(),
+                        R.layout.item_dropdown_food
+                    ) {
+                        override fun getCount(): Int = foods.size
+                        override fun getItem(position: Int): FoodResponse = foods[position]
+                        override fun getItemId(position: Int): Long = foods[position].id.toLong()
+                        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                            val view = convertView ?: LayoutInflater.from(context)
+                                .inflate(R.layout.item_dropdown_food, parent, false)
+                            
+                            val textItemName = view.findViewById<android.widget.TextView>(R.id.textItemName)
+                            textItemName.text = foods[position].name
+                            
+                            return view
+                        }
+                    }
+                    binding.autoCompleteFood.setAdapter(adapter)
+                    
+                    // Show dropdown if there are results and text field has focus
+                    if (foods.isNotEmpty() && binding.autoCompleteFood.hasFocus()) {
+                        binding.autoCompleteFood.showDropDown()
+                    }
                 }
                 is UiState.Error -> {
                     binding.progressBar.visibility = View.GONE

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:minHeight="64dp"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- Icon -->
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_search"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_icon_circle_exercise"
+        android:padding="8dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="Exercise icon" />
+
+    <!-- Text -->
+    <TextView
+        android:id="@+id/textItemName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Bài tập"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        android:textColor="?attr/colorOnSurface"
+        android:textStyle="normal"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+</LinearLayout>
+
