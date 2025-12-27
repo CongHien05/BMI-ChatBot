@@ -3,9 +3,11 @@ package com.hienpc.bmiapp.data.network
 import com.hienpc.bmiapp.data.model.*
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
@@ -26,8 +28,38 @@ interface ApiService {
     @POST("api/logs/food")
     suspend fun logFood(@Body request: FoodLogRequest): Response<Unit>
 
+    @GET("api/logs/food/history")
+    suspend fun getFoodLogHistory(
+        @Query("from") from: String? = null,
+        @Query("to") to: String? = null
+    ): Response<List<com.hienpc.bmiapp.data.model.FoodLogHistoryResponse>>
+
+    @PUT("api/logs/food/{logId}")
+    suspend fun updateFoodLog(
+        @Path("logId") logId: Int,
+        @Body request: FoodLogRequest
+    ): Response<Unit>
+
+    @DELETE("api/logs/food/{logId}")
+    suspend fun deleteFoodLog(@Path("logId") logId: Int): Response<Unit>
+
     @POST("api/logs/exercise")
     suspend fun logExercise(@Body request: ExerciseLogRequest): Response<Unit>
+
+    @GET("api/logs/exercise/history")
+    suspend fun getExerciseLogHistory(
+        @Query("from") from: String? = null,
+        @Query("to") to: String? = null
+    ): Response<List<com.hienpc.bmiapp.data.model.ExerciseLogHistoryResponse>>
+
+    @PUT("api/logs/exercise/{logId}")
+    suspend fun updateExerciseLog(
+        @Path("logId") logId: Int,
+        @Body request: ExerciseLogRequest
+    ): Response<Unit>
+
+    @DELETE("api/logs/exercise/{logId}")
+    suspend fun deleteExerciseLog(@Path("logId") logId: Int): Response<Unit>
 
     @GET("api/dashboard/summary")
     suspend fun getDashboardSummary(): Response<DashboardSummary>
@@ -67,4 +99,30 @@ interface ApiService {
     
     @GET("api/recommendations/exercises")
     suspend fun getExerciseRecommendations(@Query("limit") limit: Int = 10): Response<RecommendationResponse>
+    
+    // ========== FAVORITES API ==========
+    
+    @GET("api/foods/favorites")
+    suspend fun getFavoriteFoods(): Response<List<FoodResponse>>
+    
+    @POST("api/foods/favorites/{foodId}")
+    suspend fun addFavoriteFood(@Path("foodId") foodId: Int): Response<Unit>
+    
+    @DELETE("api/foods/favorites/{foodId}")
+    suspend fun removeFavoriteFood(@Path("foodId") foodId: Int): Response<Unit>
+    
+    @GET("api/foods/{foodId}/is-favorite")
+    suspend fun isFoodFavorite(@Path("foodId") foodId: Int): Response<Boolean>
+    
+    @GET("api/exercises/favorites")
+    suspend fun getFavoriteExercises(): Response<List<ExerciseResponse>>
+    
+    @POST("api/exercises/favorites/{exerciseId}")
+    suspend fun addFavoriteExercise(@Path("exerciseId") exerciseId: Int): Response<Unit>
+    
+    @DELETE("api/exercises/favorites/{exerciseId}")
+    suspend fun removeFavoriteExercise(@Path("exerciseId") exerciseId: Int): Response<Unit>
+    
+    @GET("api/exercises/{exerciseId}/is-favorite")
+    suspend fun isExerciseFavorite(@Path("exerciseId") exerciseId: Int): Response<Boolean>
 }

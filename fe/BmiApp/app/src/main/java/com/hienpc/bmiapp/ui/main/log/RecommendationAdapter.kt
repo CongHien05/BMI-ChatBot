@@ -33,6 +33,8 @@ class RecommendationAdapter(
         items = newItems
         notifyDataSetChanged()
     }
+    
+    fun getItems(): List<RecommendationItem> = items
 
     inner class ViewHolder(
         private val binding: ItemRecommendationBinding

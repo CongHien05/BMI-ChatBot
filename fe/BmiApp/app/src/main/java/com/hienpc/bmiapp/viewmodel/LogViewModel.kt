@@ -35,6 +35,15 @@ class LogViewModel(
     
     private val _exerciseRecommendationsState = MutableLiveData<UiState<RecommendationResponse>>(UiState.Idle)
     val exerciseRecommendationsState: LiveData<UiState<RecommendationResponse>> = _exerciseRecommendationsState
+    
+    private val _favoriteFoodsState = MutableLiveData<UiState<List<FoodResponse>>>(UiState.Idle)
+    val favoriteFoodsState: LiveData<UiState<List<FoodResponse>>> = _favoriteFoodsState
+    
+    private val _favoriteExercisesState = MutableLiveData<UiState<List<ExerciseResponse>>>(UiState.Idle)
+    val favoriteExercisesState: LiveData<UiState<List<ExerciseResponse>>> = _favoriteExercisesState
+    
+    private val _toggleFavoriteState = MutableLiveData<UiState<Boolean>>(UiState.Idle)
+    val toggleFavoriteState: LiveData<UiState<Boolean>> = _toggleFavoriteState
 
     fun loadFoods(query: String? = null) {
         viewModelScope.launch {
@@ -159,6 +168,122 @@ class LogViewModel(
                 }
             } catch (e: Exception) {
                 _exerciseRecommendationsState.value = UiState.Error("Lỗi kết nối: ${e.message}")
+            }
+        }
+    }
+    
+    // ========== FAVORITES METHODS ==========
+    
+    fun loadFavoriteFoods() {
+        viewModelScope.launch {
+            _favoriteFoodsState.value = UiState.Loading
+            try {
+                val response = repository.getFavoriteFoods()
+                if (response.isSuccessful) {
+                    val data = response.body().orEmpty()
+                    _favoriteFoodsState.value = UiState.Success(data)
+                } else {
+                    _favoriteFoodsState.value = UiState.Error(
+                        response.message().ifBlank { "Không tải được món ăn yêu thích" }
+                    )
+                }
+            } catch (e: Exception) {
+                _favoriteFoodsState.value = UiState.Error("Lỗi kết nối: ${e.message}")
+            }
+        }
+    }
+    
+    fun loadFavoriteExercises() {
+        viewModelScope.launch {
+            _favoriteExercisesState.value = UiState.Loading
+            try {
+                val response = repository.getFavoriteExercises()
+                if (response.isSuccessful) {
+                    val data = response.body().orEmpty()
+                    _favoriteExercisesState.value = UiState.Success(data)
+                } else {
+                    _favoriteExercisesState.value = UiState.Error(
+                        response.message().ifBlank { "Không tải được bài tập yêu thích" }
+                    )
+                }
+            } catch (e: Exception) {
+                _favoriteExercisesState.value = UiState.Error("Lỗi kết nối: ${e.message}")
+            }
+        }
+    }
+    
+    fun toggleFavoriteFood(foodId: Int, isCurrentlyFavorite: Boolean) {
+        viewModelScope.launch {
+            _toggleFavoriteState.value = UiState.Loading
+            try {
+                val response = if (isCurrentlyFavorite) {
+                    repository.removeFavoriteFood(foodId)
+                } else {
+                    repository.addFavoriteFood(foodId)
+                }
+                if (response.isSuccessful) {
+                    _toggleFavoriteState.value = UiState.Success(!isCurrentlyFavorite)
+                    // Reload favorites list
+                    loadFavoriteFoods()
+                } else {
+                    _toggleFavoriteState.value = UiState.Error(
+                        response.message().ifBlank { "Thao tác thất bại" }
+                    )
+                }
+            } catch (e: Exception) {
+                _toggleFavoriteState.value = UiState.Error("Lỗi kết nối: ${e.message}")
+            }
+        }
+    }
+    
+    fun toggleFavoriteExercise(exerciseId: Int, isCurrentlyFavorite: Boolean) {
+        viewModelScope.launch {
+            _toggleFavoriteState.value = UiState.Loading
+            try {
+                val response = if (isCurrentlyFavorite) {
+                    repository.removeFavoriteExercise(exerciseId)
+                } else {
+                    repository.addFavoriteExercise(exerciseId)
+                }
+                if (response.isSuccessful) {
+                    _toggleFavoriteState.value = UiState.Success(!isCurrentlyFavorite)
+                    // Reload favorites list
+                    loadFavoriteExercises()
+                } else {
+                    _toggleFavoriteState.value = UiState.Error(
+                        response.message().ifBlank { "Thao tác thất bại" }
+                    )
+                }
+            } catch (e: Exception) {
+                _toggleFavoriteState.value = UiState.Error("Lỗi kết nối: ${e.message}")
+            }
+        }
+    }
+    
+    fun checkFoodFavorite(foodId: Int, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = repository.isFoodFavorite(foodId)
+                if (response.isSuccessful) {
+                    callback(response.body() ?: false)
+                }
+            } catch (e: Exception) {
+                // Silent fail, assume not favorite
+                callback(false)
+            }
+        }
+    }
+    
+    fun checkExerciseFavorite(exerciseId: Int, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = repository.isExerciseFavorite(exerciseId)
+                if (response.isSuccessful) {
+                    callback(response.body() ?: false)
+                }
+            } catch (e: Exception) {
+                // Silent fail, assume not favorite
+                callback(false)
             }
         }
     }
