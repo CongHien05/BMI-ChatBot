@@ -36,4 +36,8 @@
     <color name="bmi_normal">#4CAF50</color>
     <color name="bmi_overweight">#FF9800</color>
     <color name="bmi_obese">#F44336</color>
+    
+    <!-- Chip colors -->
+    <color name="chip_background_food">#FFF5F5F5</color>
+    <color name="chip_background_exercise">#F0FDF4</color>
 </resources>

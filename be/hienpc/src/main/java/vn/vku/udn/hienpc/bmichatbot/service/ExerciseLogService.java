@@ -112,6 +112,62 @@ public class ExerciseLogService {
                 })
                 .collect(Collectors.toList());
     }
+
+    public void updateExerciseLog(String userEmail, Integer logId, ExerciseLogRequest request) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+
+        UserExerciseLog log = userExerciseLogRepository.findById(logId)
+                .orElseThrow(() -> new IllegalArgumentException("Exercise log not found with id: " + logId));
+
+        // Verify log belongs to user
+        if (!log.getUser().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("Exercise log does not belong to user");
+        }
+
+        // Only allow editing logs from today
+        LocalDate logDate = log.getDateExercised().toLocalDate();
+        LocalDate today = LocalDate.now();
+        if (!logDate.equals(today)) {
+            throw new IllegalArgumentException("Chỉ có thể chỉnh sửa log trong ngày hiện tại");
+        }
+
+        Exercise exercise = exerciseRepository.findById(request.getExerciseId())
+                .orElseThrow(() -> new IllegalArgumentException("Exercise not found with id: " + request.getExerciseId()));
+
+        log.setExercise(exercise);
+        log.setDurationMinutes(request.getDurationMinutes());
+
+        userExerciseLogRepository.save(log);
+        
+        // Update streak after successful update
+        streakService.updateStreak(user.getUserId());
+    }
+
+    public void deleteExerciseLog(String userEmail, Integer logId) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+
+        UserExerciseLog log = userExerciseLogRepository.findById(logId)
+                .orElseThrow(() -> new IllegalArgumentException("Exercise log not found with id: " + logId));
+
+        // Verify log belongs to user
+        if (!log.getUser().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("Exercise log does not belong to user");
+        }
+
+        // Only allow deleting logs from today
+        LocalDate logDate = log.getDateExercised().toLocalDate();
+        LocalDate today = LocalDate.now();
+        if (!logDate.equals(today)) {
+            throw new IllegalArgumentException("Chỉ có thể xóa log trong ngày hiện tại");
+        }
+
+        userExerciseLogRepository.delete(log);
+        
+        // Update streak after successful delete
+        streakService.updateStreak(user.getUserId());
+    }
 }
 
 

@@ -109,9 +109,67 @@ public class FoodLogService {
                             food != null ? food.getServingUnit() : "",
                             caloriesPerUnit,
                             totalCalories,
+                            log.getMealType(),
                             log.getDateEaten()
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    public void updateFoodLog(String userEmail, Integer logId, FoodLogRequest request) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+
+        UserFoodLog log = userFoodLogRepository.findById(logId)
+                .orElseThrow(() -> new IllegalArgumentException("Food log not found with id: " + logId));
+
+        // Verify log belongs to user
+        if (!log.getUser().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("Food log does not belong to user");
+        }
+
+        // Only allow editing logs from today
+        LocalDate logDate = log.getDateEaten().toLocalDate();
+        LocalDate today = LocalDate.now();
+        if (!logDate.equals(today)) {
+            throw new IllegalArgumentException("Chỉ có thể chỉnh sửa log trong ngày hiện tại");
+        }
+
+        Food food = foodRepository.findById(request.getFoodId())
+                .orElseThrow(() -> new IllegalArgumentException("Food not found with id: " + request.getFoodId()));
+
+        log.setFood(food);
+        log.setQuantity(request.getQuantity());
+        log.setMealType(request.getMealType());
+
+        userFoodLogRepository.save(log);
+        
+        // Update streak after successful update
+        streakService.updateStreak(user.getUserId());
+    }
+
+    public void deleteFoodLog(String userEmail, Integer logId) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+
+        UserFoodLog log = userFoodLogRepository.findById(logId)
+                .orElseThrow(() -> new IllegalArgumentException("Food log not found with id: " + logId));
+
+        // Verify log belongs to user
+        if (!log.getUser().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("Food log does not belong to user");
+        }
+
+        // Only allow deleting logs from today
+        LocalDate logDate = log.getDateEaten().toLocalDate();
+        LocalDate today = LocalDate.now();
+        if (!logDate.equals(today)) {
+            throw new IllegalArgumentException("Chỉ có thể xóa log trong ngày hiện tại");
+        }
+
+        userFoodLogRepository.delete(log);
+        
+        // Update streak after successful delete
+        streakService.updateStreak(user.getUserId());
     }
 }

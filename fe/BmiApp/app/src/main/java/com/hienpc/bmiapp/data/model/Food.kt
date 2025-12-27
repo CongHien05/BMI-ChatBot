@@ -45,6 +45,50 @@ data class ExerciseLogRequest(
 )
 
 /**
+ * Food log history response
+ */
+data class FoodLogHistoryResponse(
+    @SerializedName("logId")
+    val logId: Int,
+    @SerializedName("foodId")
+    val foodId: Int?,
+    @SerializedName("foodName")
+    val foodName: String,
+    @SerializedName("quantity")
+    val quantity: Double,
+    @SerializedName("unit")
+    val unit: String,
+    @SerializedName("caloriesPerUnit")
+    val caloriesPerUnit: Int,
+    @SerializedName("totalCalories")
+    val totalCalories: Int,
+    @SerializedName("mealType")
+    val mealType: String? = null, // BREAKFAST, LUNCH, DINNER, SNACK
+    @SerializedName("dateEaten")
+    val dateEaten: String // ISO date time string
+)
+
+/**
+ * Exercise log history response
+ */
+data class ExerciseLogHistoryResponse(
+    @SerializedName("logId")
+    val logId: Int,
+    @SerializedName("exerciseId")
+    val exerciseId: Int?,
+    @SerializedName("exerciseName")
+    val exerciseName: String,
+    @SerializedName("duration")
+    val duration: Double, // minutes
+    @SerializedName("caloriesPerMinute")
+    val caloriesPerMinute: Int,
+    @SerializedName("totalCaloriesBurned")
+    val totalCaloriesBurned: Int,
+    @SerializedName("dateExercised")
+    val dateExercised: String // ISO date time string
+)
+
+/**
  * DashboardSummary - dữ liệu tổng hợp cho dashboard
  */
 data class DashboardSummary(

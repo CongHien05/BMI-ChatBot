@@ -20,24 +20,101 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_marginBottom="24dp">
-            
-            <TextView
-                android:layout_width="wrap_content"
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="💪 Ghi lại bài tập"
-                android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:letterSpacing="0.02" />
-            
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Theo dõi hoạt động thể chất của bạn"
-                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                android:textColor="@color/text_secondary"
-                android:layout_marginTop="4dp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💪 Ghi lại bài tập"
+                        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:letterSpacing="0.02" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Theo dõi hoạt động thể chất của bạn"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <!-- Action buttons -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    
+                    <!-- History button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonHistory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📋"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:textSize="20sp"
+                        android:minWidth="0dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:contentDescription="Xem lịch sử"
+                        app:icon="@android:drawable/ic_menu_recent_history"
+                        app:iconTint="?attr/colorPrimary"
+                        app:iconGravity="textStart"
+                        android:layout_marginEnd="8dp" />
+                    
+                    <!-- Toggle Favorites Button -->
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/buttonToggleFavorites"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⭐ Yêu thích"
+                        android:textSize="13sp"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        app:chipBackgroundColor="@color/chip_background_exercise"
+                        app:chipStrokeColor="@color/gradient_start_exercise"
+                        app:chipStrokeWidth="1dp"
+                        android:textColor="@color/gradient_start_exercise"
+                        app:chipIcon="@android:drawable/btn_star_big_off"
+                        app:chipIconTint="@color/gradient_start_exercise"
+                        android:checkable="false" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
+
+        <!-- Favorites RecyclerView (hidden by default) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardFavorites"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white"
+            android:visibility="gone">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerFavorites"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:nestedScrollingEnabled="false" />
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- AI Recommendations Section - Moved to TOP -->
         <com.google.android.material.card.MaterialCardView
@@ -63,14 +140,14 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:layout_marginBottom="8dp">
-                    
+
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_sparkle"
+                        android:src="@drawable/ic_sparkle_24"
                         android:layout_marginEnd="8dp"
                         android:contentDescription="Sparkle icon" />
-                    
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -95,16 +172,29 @@
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonShowMoreRecommendations"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Xem thêm"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:textColor="?attr/colorPrimary"
+                    android:visibility="gone" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Form Card -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardForm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="24dp"
-            app:cardElevation="4dp"
+            app:cardElevation="8dp"
             app:cardBackgroundColor="@color/white"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E0E0E0"
             android:layout_marginBottom="20dp">
 
             <LinearLayout
@@ -113,24 +203,34 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Label for Exercise search -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tìm kiếm bài tập"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="8dp" />
+
                 <!-- Exercise selection with search - Filled style -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Tìm kiếm bài tập"
-                    app:startIconDrawable="@drawable/ic_search"
+                    app:startIconDrawable="@drawable/ic_search_24"
                     app:startIconTint="@color/gradient_start_exercise"
                     app:endIconMode="clear_text"
                     app:helperText="Gõ tên bài tập để tìm kiếm nhanh"
                     app:helperTextEnabled="true"
                     app:boxBackgroundMode="filled"
-                    app:boxBackgroundColor="#F5F5F5"
+                    app:boxBackgroundColor="#FAFAFA"
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
                     app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxStrokeWidth="0dp"
-                    app:boxStrokeWidthFocused="0dp"
+                    app:boxStrokeWidth="1dp"
+                    app:boxStrokeColor="#E0E0E0"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:hintEnabled="false"
                     android:layout_marginBottom="16dp"
                     style="@style/Widget.Material3.TextInputLayout.FilledBox">
 
@@ -140,26 +240,43 @@
                         android:layout_height="wrap_content"
                         android:inputType="text"
                         android:completionThreshold="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
+                        android:minHeight="56dp"
                         android:background="@android:color/transparent" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Label for Duration -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Thời gian"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="8dp" />
 
                 <!-- Duration input - Filled style -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Thời gian"
                     app:startIconDrawable="@android:drawable/ic_menu_recent_history"
                     app:startIconTint="@color/gradient_start_exercise"
                     app:suffixText="phút"
                     app:suffixTextColor="@color/gradient_start_exercise"
                     app:boxBackgroundMode="filled"
-                    app:boxBackgroundColor="#F5F5F5"
+                    app:boxBackgroundColor="#FAFAFA"
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
                     app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxStrokeWidth="0dp"
-                    app:boxStrokeWidthFocused="0dp"
+                    app:boxStrokeWidth="1dp"
+                    app:boxStrokeColor="#E0E0E0"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:hintEnabled="false"
                     android:layout_marginBottom="8dp"
                     style="@style/Widget.Material3.TextInputLayout.FilledBox">
 
@@ -168,8 +285,49 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="number"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
+                        android:minHeight="56dp"
                         android:background="@android:color/transparent" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Calories Burned Display (Realtime) -->
+                <LinearLayout
+                    android:id="@+id/layoutCaloriesInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:background="@drawable/bg_calories_info"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_info_details"
+                        app:tint="@color/gradient_start_exercise"
+                        android:layout_marginEnd="8dp"
+                        android:contentDescription="Calories icon" />
+
+                    <TextView
+                        android:id="@+id/textCaloriesInfo"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Calories đốt cháy: 0 kcal"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:textStyle="bold"
+                        android:textColor="@color/gradient_start_exercise" />
+                </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

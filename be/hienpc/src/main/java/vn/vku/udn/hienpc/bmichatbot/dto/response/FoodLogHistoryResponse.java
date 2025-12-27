@@ -20,6 +20,7 @@ public class FoodLogHistoryResponse {
     private String unit;
     private Integer caloriesPerUnit;
     private Integer totalCalories;
+    private String mealType; // BREAKFAST, LUNCH, DINNER, SNACK
     private LocalDateTime dateEaten;
 }
 
