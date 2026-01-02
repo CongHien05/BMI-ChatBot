@@ -107,3 +107,20 @@ data class ProfileUpdateRequest(
     val goalType: String? = null,
     val dailyCalorieGoal: Int? = null
 )
+
+/**
+ * CustomFoodRequest - tạo món ăn riêng
+ */
+data class CustomFoodRequest(
+    val foodName: String,
+    val servingUnit: String,
+    val caloriesPerUnit: Int
+)
+
+/**
+ * CustomExerciseRequest - tạo bài tập riêng
+ */
+data class CustomExerciseRequest(
+    val exerciseName: String,
+    val caloriesBurnedPerHour: Int
+)

@@ -125,4 +125,46 @@ interface ApiService {
     
     @GET("api/exercises/{exerciseId}/is-favorite")
     suspend fun isExerciseFavorite(@Path("exerciseId") exerciseId: Int): Response<Boolean>
+    
+    // ========== RECENTLY USED API ==========
+    
+    @GET("api/foods/recent")
+    suspend fun getRecentFoods(@Query("limit") limit: Int = 10): Response<List<FoodResponse>>
+    
+    @GET("api/exercises/recent")
+    suspend fun getRecentExercises(@Query("limit") limit: Int = 10): Response<List<ExerciseResponse>>
+    
+    // ========== CUSTOM FOOD/EXERCISE API ==========
+    
+    @POST("api/foods/custom")
+    suspend fun createCustomFood(@Body request: CustomFoodRequest): Response<FoodResponse>
+    
+    @GET("api/foods/my-custom")
+    suspend fun getCustomFoods(): Response<List<FoodResponse>>
+    
+    @PUT("api/foods/custom/{foodId}")
+    suspend fun updateCustomFood(@Path("foodId") foodId: Int, @Body request: CustomFoodRequest): Response<FoodResponse>
+    
+    @DELETE("api/foods/custom/{foodId}")
+    suspend fun deleteCustomFood(@Path("foodId") foodId: Int): Response<Unit>
+    
+    @POST("api/exercises/custom")
+    suspend fun createCustomExercise(@Body request: CustomExerciseRequest): Response<ExerciseResponse>
+    
+    @GET("api/exercises/my-custom")
+    suspend fun getCustomExercises(): Response<List<ExerciseResponse>>
+    
+    @PUT("api/exercises/custom/{exerciseId}")
+    suspend fun updateCustomExercise(@Path("exerciseId") exerciseId: Int, @Body request: CustomExerciseRequest): Response<ExerciseResponse>
+    
+    @DELETE("api/exercises/custom/{exerciseId}")
+    suspend fun deleteCustomExercise(@Path("exerciseId") exerciseId: Int): Response<Unit>
+    
+    // ========== VALIDATION API ==========
+    
+    @GET("api/foods/check-name")
+    suspend fun checkFoodNameExists(@Query("name") name: String): Response<Boolean>
+    
+    @GET("api/exercises/check-name")
+    suspend fun checkExerciseNameExists(@Query("name") name: String): Response<Boolean>
 }

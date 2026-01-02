@@ -24,6 +24,18 @@ public interface FoodRepository extends JpaRepository<Food, Integer> {
            "ELSE 3 END, " +
            "f.foodName")
     List<Food> searchByName(@Param("query") String query);
+    
+    /**
+     * Get custom foods created by a specific user
+     */
+    @Query("SELECT f FROM Food f WHERE f.createdByUser.userId = :userId AND f.isPublic = false")
+    List<Food> findCustomFoodsByUser(@Param("userId") Integer userId);
+    
+    /**
+     * Check if food name exists (case-insensitive)
+     */
+    @Query("SELECT COUNT(f) > 0 FROM Food f WHERE LOWER(TRIM(f.foodName)) = LOWER(TRIM(:foodName))")
+    boolean existsByFoodNameIgnoreCase(@Param("foodName") String foodName);
 }
 
 

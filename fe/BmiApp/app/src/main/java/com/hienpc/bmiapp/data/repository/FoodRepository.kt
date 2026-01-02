@@ -57,4 +57,36 @@ class FoodRepository(
     suspend fun removeFavoriteExercise(exerciseId: Int) = apiService.removeFavoriteExercise(exerciseId)
     
     suspend fun isExerciseFavorite(exerciseId: Int) = apiService.isExerciseFavorite(exerciseId)
+    
+    // ========== RECENTLY USED METHODS ==========
+    
+    suspend fun getRecentFoods(limit: Int = 10) = apiService.getRecentFoods(limit)
+    
+    suspend fun getRecentExercises(limit: Int = 10) = apiService.getRecentExercises(limit)
+    
+    // ========== CUSTOM FOOD/EXERCISE METHODS ==========
+    
+    suspend fun createCustomFood(request: CustomFoodRequest) = apiService.createCustomFood(request)
+    
+    suspend fun getCustomFoods() = apiService.getCustomFoods()
+    
+    suspend fun updateCustomFood(foodId: Int, request: CustomFoodRequest) = 
+        apiService.updateCustomFood(foodId, request)
+    
+    suspend fun deleteCustomFood(foodId: Int) = apiService.deleteCustomFood(foodId)
+    
+    suspend fun createCustomExercise(request: CustomExerciseRequest) = apiService.createCustomExercise(request)
+    
+    suspend fun getCustomExercises() = apiService.getCustomExercises()
+    
+    suspend fun updateCustomExercise(exerciseId: Int, request: CustomExerciseRequest) = 
+        apiService.updateCustomExercise(exerciseId, request)
+    
+    suspend fun deleteCustomExercise(exerciseId: Int) = apiService.deleteCustomExercise(exerciseId)
+    
+    // ========== VALIDATION METHODS ==========
+    
+    suspend fun checkFoodNameExists(name: String) = apiService.checkFoodNameExists(name)
+    
+    suspend fun checkExerciseNameExists(name: String) = apiService.checkExerciseNameExists(name)
 }

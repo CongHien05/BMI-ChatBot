@@ -8,11 +8,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import vn.vku.udn.hienpc.bmichatbot.dto.request.CustomFoodRequest;
 import vn.vku.udn.hienpc.bmichatbot.dto.request.FoodLogRequest;
 import vn.vku.udn.hienpc.bmichatbot.dto.response.FoodLogHistoryResponse;
 import vn.vku.udn.hienpc.bmichatbot.dto.response.FoodResponse;
 import vn.vku.udn.hienpc.bmichatbot.service.FoodLogService;
 import vn.vku.udn.hienpc.bmichatbot.service.FavoriteService;
+import vn.vku.udn.hienpc.bmichatbot.service.RecentService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,21 +26,24 @@ public class FoodLogApiController {
 
     private final FoodLogService foodLogService;
     private final FavoriteService favoriteService;
+    private final RecentService recentService;
 
-    public FoodLogApiController(FoodLogService foodLogService, FavoriteService favoriteService) {
+    public FoodLogApiController(FoodLogService foodLogService, FavoriteService favoriteService, RecentService recentService) {
         this.foodLogService = foodLogService;
         this.favoriteService = favoriteService;
+        this.recentService = recentService;
     }
 
     @GetMapping("/foods")
-    @Operation(summary = "Get all foods", description = "Return list of foods that user can select when logging meals")
+    @Operation(summary = "Get all foods", description = "Return list of foods that user can select when logging meals (includes public foods and user's custom foods)")
     public ResponseEntity<List<FoodResponse>> getFoods(
+            @AuthenticationPrincipal UserDetails userDetails,
             @Parameter(description = "Search query (optional)")
             @RequestParam(required = false) String q) {
         if (q != null && !q.trim().isEmpty()) {
-            return ResponseEntity.ok(foodLogService.searchFoods(q));
+            return ResponseEntity.ok(foodLogService.searchFoods(userDetails.getUsername(), q));
         }
-        return ResponseEntity.ok(foodLogService.getAllFoods());
+        return ResponseEntity.ok(foodLogService.getAllFoods(userDetails.getUsername()));
     }
 
     @PostMapping("/logs/food")
@@ -120,5 +125,63 @@ public class FoodLogApiController {
             @Parameter(description = "Food ID")
             @PathVariable Integer foodId) {
         return ResponseEntity.ok(favoriteService.isFoodFavorite(userDetails.getUsername(), foodId));
+    }
+
+    // ========== RECENTLY USED ENDPOINTS ==========
+
+    @GetMapping("/foods/recent")
+    @Operation(summary = "Get recently used foods", description = "Get list of foods recently used by the user")
+    public ResponseEntity<List<FoodResponse>> getRecentFoods(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Parameter(description = "Limit number of results (default: 10)")
+            @RequestParam(required = false, defaultValue = "10") Integer limit) {
+        return ResponseEntity.ok(recentService.getRecentFoods(userDetails.getUsername(), limit));
+    }
+
+    // ========== CUSTOM FOOD ENDPOINTS ==========
+
+    @PostMapping("/foods/custom")
+    @Operation(summary = "Create custom food", description = "Create a custom food item for the authenticated user")
+    public ResponseEntity<FoodResponse> createCustomFood(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody CustomFoodRequest request) {
+        FoodResponse food = foodLogService.createCustomFood(userDetails.getUsername(), request);
+        return ResponseEntity.ok(food);
+    }
+
+    @GetMapping("/foods/my-custom")
+    @Operation(summary = "Get custom foods", description = "Get list of custom foods created by the user")
+    public ResponseEntity<List<FoodResponse>> getCustomFoods(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(foodLogService.getCustomFoods(userDetails.getUsername()));
+    }
+
+    @PutMapping("/foods/custom/{foodId}")
+    @Operation(summary = "Update custom food", description = "Update a custom food item created by the user")
+    public ResponseEntity<FoodResponse> updateCustomFood(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Parameter(description = "Food ID")
+            @PathVariable Integer foodId,
+            @Valid @RequestBody CustomFoodRequest request) {
+        FoodResponse food = foodLogService.updateCustomFood(userDetails.getUsername(), foodId, request);
+        return ResponseEntity.ok(food);
+    }
+
+    @DeleteMapping("/foods/custom/{foodId}")
+    @Operation(summary = "Delete custom food", description = "Delete a custom food item created by the user")
+    public ResponseEntity<Void> deleteCustomFood(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Parameter(description = "Food ID")
+            @PathVariable Integer foodId) {
+        foodLogService.deleteCustomFood(userDetails.getUsername(), foodId);
+        return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/foods/check-name")
+    @Operation(summary = "Check if food name exists", description = "Check if a food name already exists (for validation)")
+    public ResponseEntity<Boolean> checkFoodNameExists(
+            @Parameter(description = "Food name to check")
+            @RequestParam String name) {
+        return ResponseEntity.ok(foodLogService.checkFoodNameExists(name));
     }
 }

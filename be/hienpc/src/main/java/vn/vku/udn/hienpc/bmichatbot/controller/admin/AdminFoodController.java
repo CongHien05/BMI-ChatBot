@@ -50,6 +50,9 @@ public class AdminFoodController {
             food.setFoodName(foodName);
             food.setServingUnit(servingUnit);
             food.setCaloriesPerUnit(caloriesPerUnit);
+            food.setCreatedByAdmin(admin);
+            food.setCreatedByUser(null);
+            food.setIsPublic(true); // Admin-created foods are public
 
             Food savedFood = foodRepository.save(food);
 

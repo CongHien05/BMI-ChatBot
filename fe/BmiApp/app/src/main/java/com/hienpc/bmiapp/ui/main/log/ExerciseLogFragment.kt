@@ -38,9 +38,12 @@ class ExerciseLogFragment : Fragment() {
     private var favoriteExercises: List<ExerciseResponse> = emptyList()
     private lateinit var recommendationAdapter: RecommendationAdapter
     private lateinit var favoriteAdapter: FavoriteExerciseAdapter
+    private lateinit var recentAdapter: FavoriteExerciseAdapter
+    private lateinit var myExercisesAdapter: FavoriteExerciseAdapter
     private var searchJob: Job? = null
     private var selectedExercise: ExerciseResponse? = null
     private var isShowingFavorites: Boolean = false
+    private var isShowingMyExercises: Boolean = false
     private var isRecommendationsExpanded = false
     private var allRecommendations: List<com.hienpc.bmiapp.data.model.RecommendationItem> = emptyList()
     private var isSelectingFromDropdown = false // Flag to prevent resetting selectedExercise when selecting from dropdown
@@ -59,14 +62,20 @@ class ExerciseLogFragment : Fragment() {
 
         setupRecommendationsRecyclerView()
         setupFavoritesRecyclerView()
+        setupRecentRecyclerView()
+        setupMyExercisesRecyclerView()
         setupExerciseAutoComplete()
         setupToggleFavoritesButton()
+        setupToggleMyExercisesButton()
+        setupCreateCustomExerciseButton()
         setupHistoryButton()
         setupListeners()
         observeViewModel()
 
         viewModel.loadExercises() // Load all exercises initially
         viewModel.loadFavoriteExercises() // Load favorites
+        viewModel.loadRecentExercises(10) // Load recent exercises
+        viewModel.loadCustomExercises() // Load custom exercises
         viewModel.loadExerciseRecommendations(10)
     }
 
@@ -143,12 +152,106 @@ class ExerciseLogFragment : Fragment() {
             adapter = favoriteAdapter
         }
     }
+    
+    private fun setupRecentRecyclerView() {
+        recentAdapter = FavoriteExerciseAdapter(emptyList(),
+            onItemClick = { exercise ->
+                // When user clicks a recent item, auto-fill the form
+                binding.autoCompleteExercise.setText(exercise.name, false)
+                selectedExercise = exercise
+                updateCaloriesDisplay()
+                binding.editTextDuration.requestFocus()
+                val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(binding.editTextDuration, InputMethodManager.SHOW_IMPLICIT)
+            },
+            onToggleFavorite = { exercise, isCurrentlyFavorite ->
+                viewModel.toggleFavoriteExercise(exercise.id, isCurrentlyFavorite)
+            }
+        )
+        
+        binding.recyclerRecent.apply {
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = recentAdapter
+        }
+    }
 
+    private fun setupMyExercisesRecyclerView() {
+        myExercisesAdapter = FavoriteExerciseAdapter(emptyList(),
+            onItemClick = { exercise ->
+                // When user clicks a custom exercise, auto-fill the form
+                toggleMyExercisesView(false)
+                binding.autoCompleteExercise.setText(exercise.name, false)
+                selectedExercise = exercise
+                updateCaloriesDisplay()
+                binding.editTextDuration.requestFocus()
+                val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(binding.editTextDuration, InputMethodManager.SHOW_IMPLICIT)
+            },
+            onToggleFavorite = { exercise, isCurrentlyFavorite ->
+                viewModel.toggleFavoriteExercise(exercise.id, isCurrentlyFavorite)
+            },
+            onLongClick = { exercise ->
+                // Long press to show edit/delete options
+                showCustomExerciseOptionsDialog(exercise)
+            }
+        )
+        
+        binding.recyclerMyExercises.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = myExercisesAdapter
+        }
+    }
+    
     private fun setupToggleFavoritesButton() {
         binding.buttonToggleFavorites.setOnClickListener {
             isShowingFavorites = !isShowingFavorites
+            isShowingMyExercises = false // Hide my exercises when showing favorites
             toggleFavoritesView(isShowingFavorites)
+            toggleMyExercisesView(false)
         }
+    }
+    
+    private fun setupToggleMyExercisesButton() {
+        binding.buttonToggleMyExercises.setOnClickListener {
+            isShowingMyExercises = !isShowingMyExercises
+            isShowingFavorites = false // Hide favorites when showing my exercises
+            toggleMyExercisesView(isShowingMyExercises)
+            toggleFavoritesView(false)
+        }
+    }
+    
+    private fun setupCreateCustomExerciseButton() {
+        binding.buttonCreateCustomExercise.setOnClickListener {
+            showCreateCustomExerciseDialog()
+        }
+    }
+    
+    private fun toggleMyExercisesView(showMyExercises: Boolean) {
+        isShowingMyExercises = showMyExercises
+        if (showMyExercises) {
+            binding.cardForm.visibility = View.GONE
+            binding.cardMyExercises.visibility = View.VISIBLE
+            binding.buttonToggleMyExercises.chipStrokeWidth = 2.5f
+            viewModel.loadCustomExercises() // Refresh custom exercises
+        } else {
+            binding.cardForm.visibility = View.VISIBLE
+            binding.cardMyExercises.visibility = View.GONE
+            binding.buttonToggleMyExercises.chipStrokeWidth = 1.5f
+        }
+    }
+    
+    private fun showCustomExerciseOptionsDialog(exercise: ExerciseResponse) {
+        val options = arrayOf("Chỉnh sửa", "Xóa")
+        AlertDialog.Builder(requireContext())
+            .setTitle(exercise.name)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> showEditCustomExerciseDialog(exercise) // Edit
+                    1 -> showDeleteCustomExerciseDialog(exercise) // Delete
+                }
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
     }
 
     private fun setupHistoryButton() {
@@ -167,14 +270,14 @@ class ExerciseLogFragment : Fragment() {
         if (showFavorites) {
             binding.cardForm.visibility = View.GONE
             binding.cardFavorites.visibility = View.VISIBLE
-            binding.buttonToggleFavorites.text = "Tất cả"
             binding.buttonToggleFavorites.chipIcon = requireContext().getDrawable(android.R.drawable.btn_star_big_on)
+            binding.buttonToggleFavorites.chipStrokeWidth = 2.5f
             viewModel.loadFavoriteExercises() // Refresh favorites
         } else {
             binding.cardForm.visibility = View.VISIBLE
             binding.cardFavorites.visibility = View.GONE
-            binding.buttonToggleFavorites.text = "⭐ Yêu thích"
             binding.buttonToggleFavorites.chipIcon = requireContext().getDrawable(android.R.drawable.btn_star_big_off)
+            binding.buttonToggleFavorites.chipStrokeWidth = 1.5f
         }
     }
 
@@ -411,6 +514,9 @@ class ExerciseLogFragment : Fragment() {
                     Toast.makeText(requireContext(), "Log bài tập thành công", Toast.LENGTH_SHORT)
                         .show()
                     binding.editTextDuration.text?.clear()
+                    selectedExercise = null
+                    // Reload recent exercises after successful log
+                    viewModel.loadRecentExercises(10)
                     viewModel.resetLogStates()
                 }
                 is UiState.Error -> {
@@ -458,6 +564,34 @@ class ExerciseLogFragment : Fragment() {
                 else -> {}
             }
         }
+        
+        // Observe recent exercises state
+        viewModel.recentExercisesState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    val recentExercises = state.data
+                    android.util.Log.d("ExerciseLog", "Recent exercises loaded: ${recentExercises.size} items")
+                    if (recentExercises.isNotEmpty()) {
+                        binding.cardRecent.visibility = View.VISIBLE
+                        recentAdapter.updateItems(recentExercises)
+                        android.util.Log.d("ExerciseLog", "Recent section VISIBLE with ${recentExercises.size} items")
+                    } else {
+                        binding.cardRecent.visibility = View.GONE
+                        android.util.Log.d("ExerciseLog", "Recent section GONE (empty list)")
+                    }
+                }
+                is UiState.Error -> {
+                    android.util.Log.e("ExerciseLog", "Error loading recent exercises: ${state.message}")
+                    binding.cardRecent.visibility = View.GONE
+                }
+                is UiState.Loading -> {
+                    android.util.Log.d("ExerciseLog", "Loading recent exercises...")
+                }
+                else -> {
+                    binding.cardRecent.visibility = View.GONE
+                }
+            }
+        }
 
         // Observe toggle favorite state
         viewModel.toggleFavoriteState.observe(viewLifecycleOwner) { state ->
@@ -467,6 +601,59 @@ class ExerciseLogFragment : Fragment() {
                 }
                 is UiState.Error -> {
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
+                }
+                else -> {}
+            }
+        }
+        
+        // Observe custom exercises state
+        viewModel.customExercisesState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    val customExercises = state.data
+                    myExercisesAdapter.updateItems(customExercises)
+                }
+                is UiState.Error -> {
+                    // Silent fail for custom exercises
+                }
+                else -> {}
+            }
+        }
+        
+        // Observe create custom exercise state
+        viewModel.createCustomExerciseState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    Toast.makeText(requireContext(), "Tạo bài tập thành công!", Toast.LENGTH_SHORT).show()
+                }
+                is UiState.Error -> {
+                    Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
+                }
+                else -> {}
+            }
+        }
+        
+        // Observe update custom exercise state
+        viewModel.updateCustomExerciseState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    Toast.makeText(requireContext(), "Cập nhật bài tập thành công!", Toast.LENGTH_SHORT).show()
+                }
+                is UiState.Error -> {
+                    Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
+                }
+                else -> {}
+            }
+        }
+        
+        // Observe delete custom exercise state
+        viewModel.deleteCustomExerciseState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    Toast.makeText(requireContext(), "Xóa bài tập thành công!", Toast.LENGTH_SHORT).show()
+                }
+                is UiState.Error -> {
+                    Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                 }
                 else -> {}
             }
@@ -526,11 +713,260 @@ class ExerciseLogFragment : Fragment() {
             .show()
     }
 
+    private fun showCreateCustomExerciseDialog() {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_create_custom_exercise, null)
+        
+        val textInputExerciseName = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.textInputExerciseName)
+        val editTextExerciseName = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextExerciseName)
+        val editTextCalories = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextCalories)
+        val buttonCreate = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCreate)
+        val buttonCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCancel)
+        
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+        
+        // Realtime validation with debounce
+        var validationHandler: android.os.Handler? = null
+        var validationRunnable: Runnable? = null
+        
+        editTextExerciseName.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                // Cancel previous validation
+                validationRunnable?.let { validationHandler?.removeCallbacks(it) }
+                
+                val exerciseName = s?.toString()?.trim() ?: ""
+                
+                if (exerciseName.isEmpty()) {
+                    textInputExerciseName.error = null
+                    textInputExerciseName.isErrorEnabled = false
+                    return
+                }
+                
+                // Debounce: wait 500ms before checking
+                validationRunnable = Runnable {
+                    viewModel.checkExerciseNameExists(exerciseName)
+                }
+                validationHandler = android.os.Handler(android.os.Looper.getMainLooper())
+                validationHandler?.postDelayed(validationRunnable!!, 500)
+            }
+        })
+        
+        // Observe validation state
+        val validationObserver = Observer<com.hienpc.bmiapp.utils.UiState<Boolean>> { state ->
+            when (state) {
+                is com.hienpc.bmiapp.utils.UiState.Success -> {
+                    val exists = state.data
+                    if (exists) {
+                        textInputExerciseName.error = "Bài tập này đã tồn tại"
+                        textInputExerciseName.isErrorEnabled = true
+                    } else {
+                        textInputExerciseName.error = null
+                        textInputExerciseName.isErrorEnabled = false
+                    }
+                }
+                is com.hienpc.bmiapp.utils.UiState.Error -> {
+                    // Silent fail for validation
+                    textInputExerciseName.error = null
+                    textInputExerciseName.isErrorEnabled = false
+                }
+                else -> {}
+            }
+        }
+        viewModel.exerciseNameValidationState.observe(viewLifecycleOwner, validationObserver)
+        
+        buttonCancel.setOnClickListener {
+            validationRunnable?.let { validationHandler?.removeCallbacks(it) }
+            viewModel.exerciseNameValidationState.removeObserver(validationObserver)
+            dialog.dismiss()
+        }
+        
+        buttonCreate.setOnClickListener {
+            val exerciseName = editTextExerciseName.text?.toString()?.trim() ?: ""
+            val caloriesText = editTextCalories.text?.toString()?.trim() ?: ""
+            
+            // Validation
+            if (exerciseName.isEmpty()) {
+                textInputExerciseName.error = "Vui lòng nhập tên bài tập"
+                textInputExerciseName.isErrorEnabled = true
+                return@setOnClickListener
+            }
+            
+            // Check if name exists (final check)
+            val currentState = viewModel.exerciseNameValidationState.value
+            if (currentState is com.hienpc.bmiapp.utils.UiState.Success && currentState.data) {
+                textInputExerciseName.error = "Bài tập này đã tồn tại"
+                textInputExerciseName.isErrorEnabled = true
+                return@setOnClickListener
+            }
+            
+            val textInputCalories = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.textInputCalories)
+            
+            val calories = caloriesText.toIntOrNull()
+            if (calories == null || calories <= 0) {
+                textInputCalories.error = "Vui lòng nhập calories hợp lệ"
+                textInputCalories.isErrorEnabled = true
+                return@setOnClickListener
+            }
+            
+            validationRunnable?.let { validationHandler?.removeCallbacks(it) }
+            viewModel.exerciseNameValidationState.removeObserver(validationObserver)
+            viewModel.createCustomExercise(exerciseName, calories)
+            dialog.dismiss()
+        }
+        
+        dialog.show()
+    }
+    
+    private fun showEditCustomExerciseDialog(exercise: ExerciseResponse) {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_create_custom_exercise, null)
+        
+        val textTitle = dialogView.findViewById<android.widget.TextView>(R.id.textTitle)
+        textTitle.text = "Chỉnh sửa bài tập"
+        
+        val textInputExerciseName = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.textInputExerciseName)
+        val editTextExerciseName = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextExerciseName)
+        val editTextCalories = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextCalories)
+        val buttonCreate = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCreate)
+        val buttonCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCancel)
+        
+        // Pre-fill with existing data
+        val originalName = exercise.name
+        editTextExerciseName.setText(originalName)
+        editTextCalories.setText(exercise.caloriesBurnedPerHour.toString())
+        buttonCreate.text = "Cập nhật"
+        
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+        
+        // Realtime validation with debounce (exclude current name)
+        var validationHandler: android.os.Handler? = null
+        var validationRunnable: Runnable? = null
+        
+        editTextExerciseName.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                // Cancel previous validation
+                validationRunnable?.let { validationHandler?.removeCallbacks(it) }
+                
+                val exerciseName = s?.toString()?.trim() ?: ""
+                
+                if (exerciseName.isEmpty()) {
+                    textInputExerciseName.error = null
+                    textInputExerciseName.isErrorEnabled = false
+                    return
+                }
+                
+                // Skip validation if name hasn't changed
+                if (exerciseName.equals(originalName, ignoreCase = true)) {
+                    textInputExerciseName.error = null
+                    textInputExerciseName.isErrorEnabled = false
+                    return
+                }
+                
+                // Debounce: wait 500ms before checking
+                validationRunnable = Runnable {
+                    viewModel.checkExerciseNameExists(exerciseName)
+                }
+                validationHandler = android.os.Handler(android.os.Looper.getMainLooper())
+                validationHandler?.postDelayed(validationRunnable!!, 500)
+            }
+        })
+        
+        // Observe validation state
+        val validationObserver = Observer<com.hienpc.bmiapp.utils.UiState<Boolean>> { state ->
+            when (state) {
+                is com.hienpc.bmiapp.utils.UiState.Success -> {
+                    val exists = state.data
+                    if (exists) {
+                        textInputExerciseName.error = "Bài tập này đã tồn tại"
+                        textInputExerciseName.isErrorEnabled = true
+                    } else {
+                        textInputExerciseName.error = null
+                        textInputExerciseName.isErrorEnabled = false
+                    }
+                }
+                is com.hienpc.bmiapp.utils.UiState.Error -> {
+                    // Silent fail for validation
+                    textInputExerciseName.error = null
+                    textInputExerciseName.isErrorEnabled = false
+                }
+                else -> {}
+            }
+        }
+        viewModel.exerciseNameValidationState.observe(viewLifecycleOwner, validationObserver)
+        
+        buttonCancel.setOnClickListener {
+            validationRunnable?.let { validationHandler?.removeCallbacks(it) }
+            viewModel.exerciseNameValidationState.removeObserver(validationObserver)
+            dialog.dismiss()
+        }
+        
+        buttonCreate.setOnClickListener {
+            val exerciseName = editTextExerciseName.text?.toString()?.trim() ?: ""
+            val caloriesText = editTextCalories.text?.toString()?.trim() ?: ""
+            
+            // Validation
+            if (exerciseName.isEmpty()) {
+                textInputExerciseName.error = "Vui lòng nhập tên bài tập"
+                textInputExerciseName.isErrorEnabled = true
+                return@setOnClickListener
+            }
+            
+            // Check if name exists (final check) - only if name changed
+            if (!exerciseName.equals(originalName, ignoreCase = true)) {
+                val currentState = viewModel.exerciseNameValidationState.value
+                if (currentState is com.hienpc.bmiapp.utils.UiState.Success && currentState.data) {
+                    textInputExerciseName.error = "Bài tập này đã tồn tại"
+                    textInputExerciseName.isErrorEnabled = true
+                    return@setOnClickListener
+                }
+            }
+            
+            val textInputCalories = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.textInputCalories)
+            
+            val calories = caloriesText.toIntOrNull()
+            if (calories == null || calories <= 0) {
+                textInputCalories.error = "Vui lòng nhập calories hợp lệ"
+                textInputCalories.isErrorEnabled = true
+                return@setOnClickListener
+            }
+            
+            validationRunnable?.let { validationHandler?.removeCallbacks(it) }
+            viewModel.exerciseNameValidationState.removeObserver(validationObserver)
+            viewModel.updateCustomExercise(exercise.id, exerciseName, calories)
+            dialog.dismiss()
+        }
+        
+        dialog.show()
+    }
+    
+    private fun showDeleteCustomExerciseDialog(exercise: ExerciseResponse) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Xóa bài tập")
+            .setMessage("Bạn có chắc chắn muốn xóa bài tập \"${exercise.name}\"?")
+            .setPositiveButton("Xóa") { _, _ ->
+                viewModel.deleteCustomExercise(exercise.id)
+            }
+            .setNegativeButton("Hủy", null)
+            .setCancelable(true)
+            .show()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
+
 
 
 
