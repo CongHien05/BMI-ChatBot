@@ -12,7 +12,8 @@ import com.hienpc.bmiapp.databinding.ItemFavoriteExerciseBinding
 class FavoriteExerciseAdapter(
     private var items: List<ExerciseResponse>,
     private val onItemClick: (ExerciseResponse) -> Unit,
-    private val onToggleFavorite: (ExerciseResponse, Boolean) -> Unit
+    private val onToggleFavorite: (ExerciseResponse, Boolean) -> Unit,
+    private val onLongClick: ((ExerciseResponse) -> Unit)? = null
 ) : RecyclerView.Adapter<FavoriteExerciseAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,6 +35,12 @@ class FavoriteExerciseAdapter(
         items = newItems
         notifyDataSetChanged()
     }
+    
+    fun getItems(): List<ExerciseResponse> = items
+    
+    fun getItem(position: Int): ExerciseResponse? {
+        return if (position in 0 until items.size) items[position] else null
+    }
 
     inner class ViewHolder(
         private val binding: ItemFavoriteExerciseBinding
@@ -50,6 +57,12 @@ class FavoriteExerciseAdapter(
             // Click on card to select exercise
             binding.root.setOnClickListener {
                 onItemClick(exercise)
+            }
+            
+            // Long press on card for options (if callback provided)
+            binding.root.setOnLongClickListener {
+                onLongClick?.invoke(exercise)
+                true
             }
             
             // Click on star to remove from favorites

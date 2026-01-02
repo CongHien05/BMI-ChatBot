@@ -24,6 +24,29 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Integer> {
            "ELSE 3 END, " +
            "e.exerciseName")
     List<Exercise> searchByName(@Param("query") String query);
+    
+    /**
+     * Get custom exercises created by a specific user
+     */
+    @Query("SELECT e FROM Exercise e WHERE e.createdByUser.userId = :userId AND e.isPublic = false")
+    List<Exercise> findCustomExercisesByUser(@Param("userId") Integer userId);
+    
+    /**
+     * Check if exercise name exists (case-insensitive)
+     */
+    @Query("SELECT COUNT(e) > 0 FROM Exercise e WHERE LOWER(TRIM(e.exerciseName)) = LOWER(TRIM(:exerciseName))")
+    boolean existsByExerciseNameIgnoreCase(@Param("exerciseName") String exerciseName);
+
+    /**
+     * Count custom exercises created by users (not admin)
+     */
+    long countByCreatedByUserIsNotNull();
+
+    /**
+     * Count exercises created by a specific user
+     */
+    @Query("SELECT COUNT(e) FROM Exercise e WHERE e.createdByUser.userId = :userId")
+    long countByCreatedByUserUserId(@Param("userId") Integer userId);
 }
 
 

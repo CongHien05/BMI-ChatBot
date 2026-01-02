@@ -80,6 +80,21 @@
         
         // Kiểm tra nếu đã có token, redirect đến dashboard
         window.addEventListener('DOMContentLoaded', function() {
+            // Không redirect nếu có parameter 'force' (truy cập trực tiếp để clear token cũ)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('force') === 'true') {
+                // Force show login page - clear any old tokens
+                document.cookie = 'adminToken=; path=/; max-age=0';
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminEmail');
+                // Hiển thị message
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.textContent = 'Đã clear token cũ. Vui lòng đăng nhập lại.';
+                errorDiv.className = 'alert alert-error';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
             // Kiểm tra cookie trước
             const cookies = document.cookie.split(';');
             let hasToken = false;
@@ -89,9 +104,19 @@
                     break;
                 }
             }
-            
-            if (hasToken || localStorage.getItem('adminToken')) {
+
+            // Chỉ redirect nếu có cả token và adminEmail
+            const token = localStorage.getItem('adminToken');
+            const email = localStorage.getItem('adminEmail');
+
+            if ((hasToken || token) && email) {
+                // Có vẻ như đã login rồi, redirect về dashboard
                 window.location.href = '/admin';
+            } else {
+                // Chưa login hoặc token không hợp lệ, clear token cũ
+                document.cookie = 'adminToken=; path=/; max-age=0';
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminEmail');
             }
         });
     </script>

@@ -12,21 +12,94 @@
         <div th:replace="~{admin/header :: header}"></div>
         <h1>🏠 Admin Dashboard - BMI Chatbot</h1>
 
+        <!-- Statistics Cards -->
+        <div class="stats-grid" th:if="${stats != null}">
+            <div class="stat-card">
+                <h3>👥 Tổng người dùng</h3>
+                <div class="stat-value" th:text="${stats.totalUsers}">0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>🍽️ Tổng món ăn</h3>
+                <div class="stat-value" th:text="${stats.totalFoods}">0</div>
+                <div class="stat-sub" th:text="'Custom: ' + ${stats.totalCustomFoods}">Custom: 0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>💪 Tổng bài tập</h3>
+                <div class="stat-value" th:text="${stats.totalExercises}">0</div>
+                <div class="stat-sub" th:text="'Custom: ' + ${stats.totalCustomExercises}">Custom: 0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>📊 Logs hôm nay</h3>
+                <div class="stat-value">
+                    <span th:text="${stats.foodLogsToday}">0</span> 🍽️
+                    <span th:text="${stats.exerciseLogsToday}">0</span> 💪
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3>🔥 Người dùng hoạt động</h3>
+                <div class="stat-value" th:text="${stats.activeUsersToday}">0</div>
+                <div class="stat-sub" th:text="'Tuần này: ' + ${stats.activeUsersThisWeek}">Tuần này: 0</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>🆕 Người dùng mới</h3>
+                <div class="stat-value" th:text="${stats.newUsersThisWeek}">0</div>
+                <div class="stat-sub">Tuần này</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>📝 Tổng logs</h3>
+                <div class="stat-value">
+                    <span th:text="${stats.totalFoodLogs}">0</span> 🍽️<br>
+                    <span th:text="${stats.totalExerciseLogs}">0</span> 💪
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3>⚙️ Hệ thống</h3>
+                <div class="stat-value" th:text="${stats.totalChatbotRules}">0</div>
+                <div class="stat-sub">Chatbot Rules</div>
+            </div>
+        </div>
+
+        <!-- Navigation Cards -->
+        <h2>🔧 Quản lý hệ thống</h2>
         <div class="nav-cards">
             <a href="/admin/foods" class="nav-card">
                 <h2>📝 Quản lý Món ăn</h2>
-                <p>Thêm, xem danh sách các món ăn trong thư viện</p>
+                <p>Thêm, sửa, xóa các món ăn trong thư viện</p>
+                <div class="nav-stats" th:if="${stats != null}">
+                    <span th:text="${stats.totalFoods}">0</span> món ăn
+                </div>
             </a>
-            
+
             <a href="/admin/exercises" class="nav-card">
                 <h2>💪 Quản lý Bài tập</h2>
-                <p>Thêm, xem danh sách các bài tập trong thư viện</p>
+                <p>Thêm, sửa, xóa các bài tập trong thư viện</p>
+                <div class="nav-stats" th:if="${stats != null}">
+                    <span th:text="${stats.totalExercises}">0</span> bài tập
+                </div>
             </a>
-            
+
             <a href="/admin/rules" class="nav-card">
                 <h2>🤖 Quản lý Chatbot Rules</h2>
-                <p>Thêm, xem danh sách các rule cho chatbot</p>
+                <p>Cấu hình rules cho chatbot AI</p>
+                <div class="nav-stats" th:if="${stats != null}">
+                    <span th:text="${stats.totalChatbotRules}">0</span> rules
+                </div>
             </a>
+        </div>
+
+        <!-- Recent Activity -->
+        <h2>📋 Hoạt động gần đây</h2>
+        <div class="activity-section">
+            <div class="activity-placeholder">
+                <p>🚧 Tính năng xem audit logs sẽ được thêm vào sau</p>
+            </div>
         </div>
     </div>
 </body>

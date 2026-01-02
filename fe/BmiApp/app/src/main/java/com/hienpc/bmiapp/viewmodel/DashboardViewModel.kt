@@ -33,6 +33,9 @@ class DashboardViewModel(
     
     private val _weightPredictionState = MutableLiveData<UiState<WeightPredictionResponse>>(UiState.Idle)
     val weightPredictionState: LiveData<UiState<WeightPredictionResponse>> = _weightPredictionState
+    
+    private val _profileState = MutableLiveData<UiState<ProfileResponse>>(UiState.Idle)
+    val profileState: LiveData<UiState<ProfileResponse>> = _profileState
 
     fun loadDashboard() {
         viewModelScope.launch {
@@ -216,6 +219,40 @@ class DashboardViewModel(
                 _weightPredictionState.value = UiState.Error(
                     message = e.toErrorMessage(),
                     errorCode = "EXCEPTION"
+                )
+            }
+        }
+    }
+    
+    fun loadProfile() {
+        viewModelScope.launch {
+            _profileState.value = UiState.Loading
+            try {
+                val response = retryIO(times = 2) {
+                    userRepository.getProfile()
+                }
+                
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    if (data != null) {
+                        _profileState.value = UiState.Success(data)
+                    } else {
+                        _profileState.value = UiState.Error(
+                            message = "Không có dữ liệu profile",
+                            errorCode = "NO_DATA"
+                        )
+                    }
+                } else {
+                    _profileState.value = UiState.Error(
+                        message = response.message().ifBlank { "Không tải được profile" },
+                        errorCode = "HTTP_${response.code()}"
+                    )
+                }
+            } catch (e: Exception) {
+                _profileState.value = UiState.Error(
+                    message = e.toErrorMessage(),
+                    errorCode = "EXCEPTION",
+                    throwable = e
                 )
             }
         }

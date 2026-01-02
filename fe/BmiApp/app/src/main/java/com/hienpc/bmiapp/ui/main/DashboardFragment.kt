@@ -47,10 +47,23 @@ class DashboardFragment : Fragment() {
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.loadDashboard()
+            viewModel.loadWeeklySummary()
+            viewModel.loadTrendAnalysis()
+            viewModel.loadWeightPrediction(7)
+            viewModel.loadProfile()
         }
 
         binding.buttonUpdateMeasurement.setOnClickListener {
             showMeasurementDialog()
+        }
+        
+        // Quick action buttons
+        binding.buttonQuickLogFood.setOnClickListener {
+            navigateToFoodLog()
+        }
+        
+        binding.buttonQuickLogExercise.setOnClickListener {
+            navigateToExerciseLog()
         }
 
         observeViewModel()
@@ -58,6 +71,23 @@ class DashboardFragment : Fragment() {
         viewModel.loadWeeklySummary()
         viewModel.loadTrendAnalysis()
         viewModel.loadWeightPrediction(7) // Load 7-day prediction
+        viewModel.loadProfile() // Load profile for calorie goal
+    }
+    
+    private fun navigateToFoodLog() {
+        val foodLogFragment = com.hienpc.bmiapp.ui.main.log.FoodLogFragment()
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.nav_host_fragment, foodLogFragment)
+            .addToBackStack("Dashboard")
+            .commit()
+    }
+    
+    private fun navigateToExerciseLog() {
+        val exerciseLogFragment = com.hienpc.bmiapp.ui.main.log.ExerciseLogFragment()
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.nav_host_fragment, exerciseLogFragment)
+            .addToBackStack("Dashboard")
+            .commit()
     }
 
     private fun observeViewModel() {
@@ -93,9 +123,25 @@ class DashboardFragment : Fragment() {
                         getString(R.string.dashboard_bmi_format, it)
                     } ?: getString(R.string.dashboard_bmi_placeholder)
                     binding.textBmi.text = bmiText
+                    
+                    // Show BMI status
+                    data.bmi?.let { bmi ->
+                        val (statusText, statusColor) = getBmiStatus(bmi)
+                        binding.textBmiStatus.text = statusText
+                        binding.textBmiStatus.setTextColor(statusColor)
+                        binding.textBmiStatus.visibility = View.VISIBLE
+                    } ?: run {
+                        binding.textBmiStatus.visibility = View.GONE
+                    }
 
                     binding.textCalories.text =
                         getString(R.string.dashboard_calories_format, data.totalCaloriesToday)
+                    
+                    // Update calories progress (will be updated when profile loads too)
+                    val profileState = viewModel.profileState.value
+                    if (profileState is UiState.Success) {
+                        updateCaloriesProgress(data.totalCaloriesToday, profileState.data.dailyCalorieGoal)
+                    }
                 }
                 
                 is UiState.Empty -> {
@@ -106,8 +152,7 @@ class DashboardFragment : Fragment() {
                         iconRes = R.drawable.ic_dashboard,
                         actionText = "Log bữa ăn",
                         onActionClick = {
-                            // Navigate to log screen
-                            // TODO: implement navigation
+                            navigateToFoodLog()
                         }
                     )
                 }
@@ -264,6 +309,51 @@ class DashboardFragment : Fragment() {
                 }
                 else -> {}
             }
+        }
+        
+        // Observe profile for calorie goal
+        viewModel.profileState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    val profile = state.data
+                    val calorieGoal = profile.dailyCalorieGoal
+                    val currentCalories = viewModel.dashboardState.value?.let {
+                        if (it is UiState.Success) it.data.totalCaloriesToday else 0
+                    } ?: 0
+                    
+                    updateCaloriesProgress(currentCalories, calorieGoal)
+                }
+                else -> {}
+            }
+        }
+    }
+    
+    private fun getBmiStatus(bmi: Double): Pair<String, Int> {
+        return when {
+            bmi < 18.5 -> Pair("Thiếu cân", android.graphics.Color.parseColor("#2196F3"))
+            bmi < 25 -> Pair("Bình thường", android.graphics.Color.parseColor("#4CAF50"))
+            bmi < 30 -> Pair("Thừa cân", android.graphics.Color.parseColor("#FF9800"))
+            else -> Pair("Béo phì", android.graphics.Color.parseColor("#F44336"))
+        }
+    }
+    
+    private fun updateCaloriesProgress(current: Int, goal: Int?) {
+        if (goal != null && goal > 0) {
+            val progress = ((current.toFloat() / goal.toFloat()) * 100).coerceAtMost(100f).toInt()
+            binding.progressCalories.progress = progress
+            binding.progressCalories.visibility = View.VISIBLE
+            
+            val remaining = goal - current
+            val goalText = if (remaining > 0) {
+                "Còn ${remaining} kcal để đạt mục tiêu"
+            } else {
+                "Đã vượt mục tiêu ${-remaining} kcal"
+            }
+            binding.textCaloriesGoal.text = goalText
+            binding.textCaloriesGoal.visibility = View.VISIBLE
+        } else {
+            binding.progressCalories.visibility = View.GONE
+            binding.textCaloriesGoal.visibility = View.GONE
         }
     }
     

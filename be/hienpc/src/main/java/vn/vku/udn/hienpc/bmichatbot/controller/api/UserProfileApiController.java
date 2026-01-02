@@ -39,7 +39,7 @@ public class UserProfileApiController {
         
         if (profileOpt.isEmpty()) {
             // Return empty profile if not exists
-            return ResponseEntity.ok(new ProfileResponse(null, null, null, null, null));
+            return ResponseEntity.ok(new ProfileResponse(null, null, null, null, null, user.getRole().name()));
         }
         
         UserProfile profile = profileOpt.get();
@@ -48,7 +48,8 @@ public class UserProfileApiController {
                 profile.getGender(),
                 profile.getGoalType(),
                 profile.getGoalWeightKg(),
-                profile.getDailyCalorieGoal()
+                profile.getDailyCalorieGoal(),
+                user.getRole().name()
         );
         
         return ResponseEntity.ok(response);

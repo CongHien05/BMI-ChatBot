@@ -35,6 +35,11 @@ public class AuditLogService {
         logAction(user, "UPDATE", entityName, entityId, details);
     }
 
+    public void logUpdate(User user, String entityName, String entityId, String oldData, String newData) {
+        String details = String.format("Old: %s | New: %s", oldData, newData);
+        logAction(user, "UPDATE", entityName, entityId, details);
+    }
+
     public void logDelete(User user, String entityName, String entityId, String details) {
         logAction(user, "DELETE", entityName, entityId, details);
     }

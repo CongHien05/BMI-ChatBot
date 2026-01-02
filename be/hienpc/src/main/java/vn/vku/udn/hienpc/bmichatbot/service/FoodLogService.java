@@ -1,6 +1,8 @@
 package vn.vku.udn.hienpc.bmichatbot.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vn.vku.udn.hienpc.bmichatbot.dto.request.CustomFoodRequest;
 import vn.vku.udn.hienpc.bmichatbot.dto.request.FoodLogRequest;
 import vn.vku.udn.hienpc.bmichatbot.dto.response.FoodLogHistoryResponse;
 import vn.vku.udn.hienpc.bmichatbot.dto.response.FoodResponse;
@@ -24,19 +26,38 @@ public class FoodLogService {
     private final UserRepository userRepository;
     private final UserFoodLogRepository userFoodLogRepository;
     private final StreakService streakService;
+    private final RecentService recentService;
 
     public FoodLogService(FoodRepository foodRepository,
                           UserRepository userRepository,
                           UserFoodLogRepository userFoodLogRepository,
-                          StreakService streakService) {
+                          StreakService streakService,
+                          RecentService recentService) {
         this.foodRepository = foodRepository;
         this.userRepository = userRepository;
         this.userFoodLogRepository = userFoodLogRepository;
         this.streakService = streakService;
+        this.recentService = recentService;
     }
 
-    public List<FoodResponse> getAllFoods() {
-        return foodRepository.findAll().stream()
+    public List<FoodResponse> getAllFoods(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+        
+        // Get public foods: foods without createdByUser (admin created or old foods)
+        // OR foods with isPublic = true
+        List<Food> publicFoods = foodRepository.findAll().stream()
+                .filter(f -> f.getCreatedByUser() == null || 
+                            (f.getIsPublic() != null && f.getIsPublic()))
+                .collect(Collectors.toList());
+        
+        List<Food> customFoods = foodRepository.findCustomFoodsByUser(user.getUserId());
+        
+        // Combine and convert to response
+        List<Food> allFoods = new java.util.ArrayList<>(publicFoods);
+        allFoods.addAll(customFoods);
+        
+        return allFoods.stream()
                 .map(f -> new FoodResponse(
                         f.getFoodId(),
                         f.getFoodName(),
@@ -45,12 +66,31 @@ public class FoodLogService {
                 .collect(Collectors.toList());
     }
     
-    public List<FoodResponse> searchFoods(String query) {
+    public List<FoodResponse> searchFoods(String userEmail, String query) {
         if (query == null || query.trim().isEmpty()) {
-            return getAllFoods();
+            return getAllFoods(userEmail);
         }
         
-        return foodRepository.searchByName(query.trim()).stream()
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+        
+        // Search in public foods: foods without createdByUser (admin created or old foods)
+        // OR foods with isPublic = true
+        List<Food> publicFoods = foodRepository.searchByName(query.trim()).stream()
+                .filter(f -> f.getCreatedByUser() == null || 
+                            (f.getIsPublic() != null && f.getIsPublic()))
+                .collect(Collectors.toList());
+        
+        // Search in custom foods of this user
+        List<Food> customFoods = foodRepository.findCustomFoodsByUser(user.getUserId()).stream()
+                .filter(f -> f.getFoodName().toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+        
+        // Combine and convert to response
+        List<Food> allFoods = new java.util.ArrayList<>(publicFoods);
+        allFoods.addAll(customFoods);
+        
+        return allFoods.stream()
                 .map(f -> new FoodResponse(
                         f.getFoodId(),
                         f.getFoodName(),
@@ -77,6 +117,9 @@ public class FoodLogService {
         
         // Update streak after successful log
         streakService.updateStreak(user.getUserId());
+        
+        // Update recently used foods
+        recentService.updateRecentFood(userEmail, request.getFoodId());
     }
 
     public List<FoodLogHistoryResponse> getFoodLogHistory(String userEmail, LocalDate from, LocalDate to) {
@@ -171,5 +214,93 @@ public class FoodLogService {
         
         // Update streak after successful delete
         streakService.updateStreak(user.getUserId());
+    }
+    
+    // ========== CUSTOM FOOD METHODS ==========
+    
+    @Transactional
+    public FoodResponse createCustomFood(String userEmail, CustomFoodRequest request) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+        
+        Food food = new Food();
+        food.setFoodName(request.getFoodName().trim());
+        food.setServingUnit(request.getServingUnit().trim());
+        food.setCaloriesPerUnit(request.getCaloriesPerUnit());
+        food.setCreatedByUser(user);
+        food.setCreatedByAdmin(null);
+        food.setIsPublic(false); // User-created foods are private
+        
+        Food savedFood = foodRepository.save(food);
+        
+        return new FoodResponse(
+                savedFood.getFoodId(),
+                savedFood.getFoodName(),
+                savedFood.getServingUnit(),
+                savedFood.getCaloriesPerUnit()
+        );
+    }
+    
+    public List<FoodResponse> getCustomFoods(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+        
+        return foodRepository.findCustomFoodsByUser(user.getUserId()).stream()
+                .map(f -> new FoodResponse(
+                        f.getFoodId(),
+                        f.getFoodName(),
+                        f.getServingUnit(),
+                        f.getCaloriesPerUnit()))
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public FoodResponse updateCustomFood(String userEmail, Integer foodId, CustomFoodRequest request) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+        
+        Food food = foodRepository.findById(foodId)
+                .orElseThrow(() -> new IllegalArgumentException("Food not found with id: " + foodId));
+        
+        // Verify food belongs to user
+        if (food.getCreatedByUser() == null || !food.getCreatedByUser().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("Food does not belong to user or is not a custom food");
+        }
+        
+        food.setFoodName(request.getFoodName().trim());
+        food.setServingUnit(request.getServingUnit().trim());
+        food.setCaloriesPerUnit(request.getCaloriesPerUnit());
+        
+        Food updatedFood = foodRepository.save(food);
+        
+        return new FoodResponse(
+                updatedFood.getFoodId(),
+                updatedFood.getFoodName(),
+                updatedFood.getServingUnit(),
+                updatedFood.getCaloriesPerUnit()
+        );
+    }
+    
+    @Transactional
+    public void deleteCustomFood(String userEmail, Integer foodId) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userEmail));
+        
+        Food food = foodRepository.findById(foodId)
+                .orElseThrow(() -> new IllegalArgumentException("Food not found with id: " + foodId));
+        
+        // Verify food belongs to user
+        if (food.getCreatedByUser() == null || !food.getCreatedByUser().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("Food does not belong to user or is not a custom food");
+        }
+        
+        foodRepository.delete(food);
+    }
+    
+    public boolean checkFoodNameExists(String foodName) {
+        if (foodName == null || foodName.trim().isEmpty()) {
+            return false;
+        }
+        return foodRepository.existsByFoodNameIgnoreCase(foodName.trim());
     }
 }

@@ -12,7 +12,8 @@ import com.hienpc.bmiapp.databinding.ItemFavoriteFoodBinding
 class FavoriteFoodAdapter(
     private var items: List<FoodResponse>,
     private val onItemClick: (FoodResponse) -> Unit,
-    private val onToggleFavorite: (FoodResponse, Boolean) -> Unit
+    private val onToggleFavorite: (FoodResponse, Boolean) -> Unit,
+    private val onLongClick: ((FoodResponse) -> Unit)? = null
 ) : RecyclerView.Adapter<FavoriteFoodAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,6 +35,12 @@ class FavoriteFoodAdapter(
         items = newItems
         notifyDataSetChanged()
     }
+    
+    fun getItems(): List<FoodResponse> = items
+    
+    fun getItem(position: Int): FoodResponse? {
+        return if (position in 0 until items.size) items[position] else null
+    }
 
     inner class ViewHolder(
         private val binding: ItemFavoriteFoodBinding
@@ -50,6 +57,12 @@ class FavoriteFoodAdapter(
             // Click on card to select food
             binding.root.setOnClickListener {
                 onItemClick(food)
+            }
+            
+            // Long press on card for options (if callback provided)
+            binding.root.setOnLongClickListener {
+                onLongClick?.invoke(food)
+                true
             }
             
             // Click on star to remove from favorites

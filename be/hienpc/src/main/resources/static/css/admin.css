@@ -474,6 +474,75 @@ tbody tr:last-child td {
     }
 }
 
+/* ===== Statistics Cards ===== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(240, 147, 251, 0.4);
+}
+
+.stat-card h3 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.stat-sub {
+    font-size: 12px;
+    opacity: 0.8;
+    font-weight: 500;
+}
+
+/* ===== Enhanced Navigation Cards ===== */
+.nav-card .nav-stats {
+    margin-top: 15px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* ===== Activity Section ===== */
+.activity-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 30px 0;
+}
+
+.activity-placeholder {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+}
+
 /* ===== Additional Utilities ===== */
 .text-center {
     text-align: center;

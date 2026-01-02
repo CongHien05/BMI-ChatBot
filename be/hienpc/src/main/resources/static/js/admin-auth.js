@@ -18,14 +18,15 @@
     // Kiểm tra xem user có role ADMIN không (từ token)
     function hasAdminRole() {
         const token = getToken();
-        if (!token) return false;
-        
+        const email = localStorage.getItem('adminEmail');
+        if (!token || !email) return false;
+
         try {
             // Decode JWT token (chỉ lấy payload, không verify)
             const payload = JSON.parse(atob(token.split('.')[1]));
             // Kiểm tra authorities trong token (nếu có)
             // Hoặc có thể gọi API để verify
-            return true; // Tạm thời return true nếu có token
+            return true; // Tạm thời return true nếu có token và email
         } catch (e) {
             return false;
         }
@@ -33,6 +34,8 @@
 
     // Redirect về login nếu chưa đăng nhập
     function redirectToLogin() {
+        // Xóa cả cookie và localStorage
+        document.cookie = 'adminToken=; path=/; max-age=0';
         localStorage.removeItem('adminToken');
         localStorage.removeItem('adminEmail');
         window.location.href = '/admin/login';
@@ -114,13 +117,14 @@
     function checkAuth() {
         if (isAdminPage()) {
             const token = getToken();
-            if (!token) {
+            const email = localStorage.getItem('adminEmail');
+            if (!token || !email) {
                 redirectToLogin();
                 return;
             }
-            
+
             // Có thể verify token bằng cách gọi API
-            // Tạm thời chỉ kiểm tra có token hay không
+            // Tạm thời chỉ kiểm tra có token và email hay không
         }
     }
 

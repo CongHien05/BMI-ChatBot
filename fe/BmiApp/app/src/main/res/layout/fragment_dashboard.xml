@@ -18,15 +18,59 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Quick Actions Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="20dp"
+                android:gravity="center_vertical">
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonQuickLogFood"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Ghi bữa ăn"
+                    android:textSize="14sp"
+                    android:minHeight="48dp"
+                    app:icon="@android:drawable/ic_menu_compass"
+                    app:iconGravity="textStart"
+                    app:iconSize="20dp"
+                    app:iconPadding="8dp"
+                    app:cornerRadius="12dp"
+                    android:layout_marginEnd="8dp"
+                    app:backgroundTint="@color/gradient_start_food" />
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonQuickLogExercise"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Ghi bài tập"
+                    android:textSize="14sp"
+                    android:minHeight="48dp"
+                    app:icon="@android:drawable/ic_menu_view"
+                    app:iconGravity="textStart"
+                    app:iconSize="20dp"
+                    app:iconPadding="8dp"
+                    app:cornerRadius="12dp"
+                    android:layout_marginStart="8dp"
+                    app:backgroundTint="@color/gradient_start_exercise" />
+            </LinearLayout>
+
             <!-- Card tổng quan cân nặng - với icon và màu nền -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="8dp"
-                app:cardBackgroundColor="@color/card_weight_bg"
-                app:strokeWidth="0dp">
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E0E0E0">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -35,11 +79,11 @@
 
                     <ImageView
                         android:id="@+id/iconWeight"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:src="@android:drawable/ic_menu_myplaces"
                         android:background="@drawable/ic_background_circle"
-                        android:padding="12dp"
+                        android:padding="10dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:tint="@color/primary" />
@@ -77,11 +121,12 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="8dp"
-                app:cardBackgroundColor="@color/card_bmi_bg"
-                app:strokeWidth="0dp">
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E0E0E0">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -90,11 +135,11 @@
 
                     <ImageView
                         android:id="@+id/iconBmi"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:src="@android:drawable/ic_menu_view"
                         android:background="@drawable/ic_background_circle"
-                        android:padding="12dp"
+                        android:padding="10dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:tint="#2196F3" />
@@ -131,13 +176,18 @@
                         android:layout_height="wrap_content"
                         android:text=""
                         android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:background="@drawable/bg_bmi_status"
                         android:visibility="gone"
                         app:layout_constraintStart_toEndOf="@id/iconBmi"
                         app:layout_constraintTop_toBottomOf="@id/textBmi"
                         app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="4dp" />
+                        android:layout_marginTop="6dp" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -146,11 +196,12 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="8dp"
-                app:cardBackgroundColor="@color/card_calories_bg"
-                app:strokeWidth="0dp">
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E0E0E0">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -159,11 +210,11 @@
 
                     <ImageView
                         android:id="@+id/iconCalories"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:src="@android:drawable/ic_menu_compass"
                         android:background="@drawable/ic_background_circle"
-                        android:padding="12dp"
+                        android:padding="10dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:tint="@color/accent" />
@@ -198,11 +249,12 @@
                         android:id="@+id/progressCalories"
                         style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="0dp"
-                        android:layout_height="8dp"
+                        android:layout_height="10dp"
                         android:progressTint="@color/accent"
+                        android:progressBackgroundTint="#E0E0E0"
                         android:max="100"
                         android:progress="0"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         app:layout_constraintStart_toEndOf="@id/iconCalories"
                         app:layout_constraintTop_toBottomOf="@id/textCalories"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -216,12 +268,12 @@
                         android:text=""
                         android:textAppearance="@style/TextAppearance.Material3.BodySmall"
                         android:textColor="@color/text_secondary"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         app:layout_constraintStart_toEndOf="@id/iconCalories"
                         app:layout_constraintTop_toBottomOf="@id/progressCalories"
                         app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="4dp" />
+                        android:layout_marginTop="6dp" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -231,18 +283,36 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/measurement_update_button"
-                android:layout_marginBottom="16dp"
+                android:textSize="14sp"
+                android:minHeight="48dp"
+                android:layout_marginBottom="20dp"
+                app:icon="@android:drawable/ic_menu_edit"
+                app:iconGravity="textStart"
+                app:iconSize="18dp"
+                app:cornerRadius="12dp"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
+            
+            <!-- Section Header: Charts & Insights -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📊 Thống kê & Phân tích"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp" />
 
             <!-- AI Weight Prediction Chart -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardWeightPrediction"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#F3E5F5">
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E0E0E0">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -261,9 +331,10 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🤖 AI Dự đoán cân nặng (7 ngày)"
+                            android:text="Dự đoán cân nặng (7 ngày)"
                             android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
 
                         <TextView
                             android:id="@+id/textPredictionTrend"
@@ -301,9 +372,12 @@
                 android:id="@+id/cardWeightChart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E0E0E0">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -332,9 +406,12 @@
                 android:id="@+id/cardCaloriesChart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E0E0E0">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -363,10 +440,12 @@
                 android:id="@+id/cardTrendInsight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#E3F2FD">
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#F5F5F5"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E0E0E0">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -377,9 +456,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="💡 Insight"
+                        android:text="💡 Phân tích xu hướng"
                         android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                         android:textStyle="bold"
+                        android:textColor="@color/text_primary"
                         android:layout_marginBottom="8dp" />
 
                     <TextView

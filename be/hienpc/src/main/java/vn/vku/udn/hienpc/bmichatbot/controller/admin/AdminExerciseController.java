@@ -48,6 +48,9 @@ public class AdminExerciseController {
             Exercise exercise = new Exercise();
             exercise.setExerciseName(exerciseName);
             exercise.setCaloriesBurnedPerHour(caloriesBurnedPerHour);
+            exercise.setCreatedByAdmin(admin);
+            exercise.setCreatedByUser(null);
+            exercise.setIsPublic(true); // Admin-created exercises are public
 
             Exercise savedExercise = exerciseRepository.save(exercise);
 

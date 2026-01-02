@@ -16,5 +16,6 @@ public class ProfileResponse {
     private String goalType;
     private BigDecimal goalWeightKg;
     private Integer dailyCalorieGoal;
+    private String role; // "USER" or "ADMIN"
 }
 

@@ -51,47 +51,90 @@
                         android:layout_marginTop="4dp" />
                 </LinearLayout>
 
-                <!-- Action buttons -->
-                <LinearLayout
+                <!-- Action buttons - Modern Icon Button Group -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E0E0E0"
+                    app:cardBackgroundColor="@color/white">
                     
-                    <!-- History button -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonHistory"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📋"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:textSize="20sp"
-                        android:minWidth="0dp"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
-                        android:contentDescription="Xem lịch sử"
-                        app:icon="@android:drawable/ic_menu_recent_history"
-                        app:iconTint="?attr/colorPrimary"
-                        app:iconGravity="textStart"
-                        android:layout_marginEnd="8dp" />
-                    
-                    <!-- Toggle Favorites Button -->
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/buttonToggleFavorites"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="⭐ Yêu thích"
-                        android:textSize="13sp"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        app:chipBackgroundColor="@color/chip_background_food"
-                        app:chipStrokeColor="@color/gradient_start_food"
-                        app:chipStrokeWidth="1dp"
-                        android:textColor="@color/gradient_start_food"
-                        app:chipIcon="@android:drawable/btn_star_big_off"
-                        app:chipIconTint="@color/gradient_start_food"
-                        android:checkable="false" />
-                </LinearLayout>
+                        android:orientation="horizontal"
+                        android:padding="4dp"
+                        android:gravity="center_vertical">
+                        
+                        <!-- History button - Icon only -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/buttonHistory"
+                            style="@style/Widget.Material3.Button.IconButton"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:contentDescription="Xem lịch sử"
+                            app:icon="@android:drawable/ic_menu_recent_history"
+                            app:iconTint="@color/gradient_start_food"
+                            app:iconSize="20dp"
+                            app:iconPadding="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
+            
+            <!-- Filter Chips Row -->
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:singleSelection="false"
+                app:chipSpacing="8dp">
+                
+                <!-- Toggle Favorites Button -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/buttonToggleFavorites"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Yêu thích"
+                    android:textSize="12sp"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    app:chipBackgroundColor="@color/chip_background_food"
+                    app:chipStrokeColor="@color/gradient_start_food"
+                    app:chipStrokeWidth="1.5dp"
+                    android:textColor="@color/gradient_start_food"
+                    app:chipIcon="@android:drawable/btn_star_big_off"
+                    app:chipIconTint="@color/gradient_start_food"
+                    app:chipIconSize="16dp"
+                    android:checkable="false"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:minHeight="36dp" />
+                
+                <!-- Toggle My Foods Button -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/buttonToggleMyFoods"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Món của tôi"
+                    android:textSize="12sp"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    app:chipBackgroundColor="@color/chip_background_food"
+                    app:chipStrokeColor="@color/gradient_start_food"
+                    app:chipStrokeWidth="1.5dp"
+                    android:textColor="@color/gradient_start_food"
+                    app:chipIcon="@android:drawable/ic_menu_edit"
+                    app:chipIconTint="@color/gradient_start_food"
+                    app:chipIconSize="16dp"
+                    android:checkable="false"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:minHeight="36dp" />
+            </com.google.android.material.chip.ChipGroup>
         </LinearLayout>
 
         <!-- Favorites RecyclerView (hidden by default) -->
@@ -114,6 +157,92 @@
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"
                 android:nestedScrollingEnabled="false" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- My Custom Foods RecyclerView (hidden by default) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardMyFoods"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="📝 Món của tôi"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonCreateCustomFood"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tạo mới"
+                        android:textSize="12sp"
+                        app:icon="@android:drawable/ic_input_add"
+                        app:iconTint="@color/gradient_start_food" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerMyFoods"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Recently Used Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardRecent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🕐 Gần đây"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="12dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerRecent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <!-- AI Recommendations Section - Moved to TOP -->
@@ -190,11 +319,10 @@
             android:id="@+id/cardForm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="8dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp"
             app:cardBackgroundColor="@color/white"
-            app:strokeWidth="1dp"
-            app:strokeColor="#E0E0E0"
+            app:strokeWidth="0dp"
             android:layout_marginBottom="20dp">
 
             <LinearLayout
@@ -337,7 +465,8 @@
                     android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="12dp" />
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupMealType"
@@ -345,61 +474,92 @@
                     android:layout_height="wrap_content"
                     app:singleSelection="true"
                     app:checkedChip="@id/chipBreakfast"
-                    android:layout_marginBottom="8dp">
+                    app:chipSpacing="8dp"
+                    android:layout_marginBottom="20dp">
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipBreakfast"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Sáng"
+                        android:textSize="13sp"
                         android:checkable="true"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:minHeight="40dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        app:chipBackgroundColor="@color/chip_background_food"
+                        app:chipStrokeColor="@color/gradient_start_food"
+                        app:chipStrokeWidth="1.5dp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipLunch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Trưa"
+                        android:textSize="13sp"
                         android:checkable="true"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:minHeight="40dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        app:chipBackgroundColor="@color/chip_background_food"
+                        app:chipStrokeColor="@color/gradient_start_food"
+                        app:chipStrokeWidth="1.5dp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipDinner"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Tối"
+                        android:textSize="13sp"
                         android:checkable="true"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:minHeight="40dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        app:chipBackgroundColor="@color/chip_background_food"
+                        app:chipStrokeColor="@color/gradient_start_food"
+                        app:chipStrokeWidth="1.5dp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipSnack"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Xế"
+                        android:textSize="13sp"
                         android:checkable="true"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:minHeight="40dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        app:chipBackgroundColor="@color/chip_background_food"
+                        app:chipStrokeColor="@color/gradient_start_food"
+                        app:chipStrokeWidth="1.5dp" />
 
                 </com.google.android.material.chip.ChipGroup>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Submit button - Gradient style -->
+        <!-- Submit button - Modern Gradient style -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonLogFood"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="56dp"
             android:text="Ghi lại bữa ăn"
             android:textAllCaps="false"
-            android:textSize="17sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/white"
             android:background="@drawable/bg_button_ripple_food"
-            android:elevation="8dp"
+            android:elevation="4dp"
             android:stateListAnimator="@null"
             app:icon="@android:drawable/ic_menu_save"
             app:iconGravity="textStart"
             app:iconTint="@color/white"
+            app:iconSize="20dp"
+            app:cornerRadius="16dp"
             android:layout_marginBottom="16dp"
             style="@style/Widget.Material3.Button" />
 
